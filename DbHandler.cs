@@ -72,30 +72,45 @@ namespace PlayLogger
             }
         }
 
+
+        public static object s_LockDb = new object();
         public static List<SongInfo> GetHistoryFromDb()
         {
+
             List<SongInfo> history = null;
             var dbCon = DBConnection.Instance();
             if (dbCon.IsConnect())
             {
-                history = new List<SongInfo>();
-                string query = string.Format("SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory", extraFiledsCSV());
-                var cmd = new MySqlCommand(query, dbCon.Connection);
-                using (var reader = cmd.ExecuteReader())
+                try
                 {
-                    while (reader.Read())
+                    history = new List<SongInfo>();
+                    string query = string.Format("SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory", extraFiledsCSV());
+                    var cmd = new MySqlCommand(query, dbCon.Connection);
+                    
+                    lock (s_LockDb)
                     {
-                        SongInfo song = new SongInfo()
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            RecordId = reader.GetInt64(0),
-                            Id = reader.GetInt32(1),
-                            Title = reader.SafeGetString(2),
-                            PlayTime = reader.GetDateTime(3),
-                            PlayLocation = reader.SafeGetString(4)
-                        };
+                            while (reader.Read())
+                            {
+                                SongInfo song = new SongInfo()
+                                {
+                                    RecordId = reader.GetInt64(0),
+                                    Id = reader.GetInt32(1),
+                                    Title = reader.SafeGetString(2),
+                                    PlayTime = reader.GetDateTime(3),
+                                    PlayLocation = reader.SafeGetString(4)
+                                };
 
-                        history.Add(song);
+                                history.Add(song);
+                            }
+                        }
                     }
+
+                }
+                catch (MySqlException ex)
+                {
+                    MainViewModel.LogException(ex);
                 }
 
                 foreach (var item in history)

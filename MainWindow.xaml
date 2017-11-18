@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:local="clr-namespace:PlayLogger"
+        xmlns:ex="clr-namespace:ExtendedGrid.ExtendedGridControl;assembly=ExtendedGrid"
         mc:Ignorable="d"
         x:Class="PlayLogger.MainWindow"
         Title="Bitnua4Amps"
