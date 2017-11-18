@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Windows.Forms;
 using System.Configuration;
 using System.ComponentModel;
+using System.Reflection;
 namespace PlayLogger
 {
     /// <summary>
@@ -25,12 +26,11 @@ namespace PlayLogger
         public MainWindow()
         {
             InitializeComponent();
-
-
             System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
-
-
             this.DataContext = new MainViewModel();
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            VersionTB.Text = string.Format("Version {0}",assembly.GetName().Version.ToString());
         }
 
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
