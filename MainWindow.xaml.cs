@@ -15,6 +15,9 @@ using System.Windows.Shapes;
 using System.Windows.Forms;
 using System.Configuration;
 using System.ComponentModel;
+using System.Threading;
+using System.Globalization;
+using System.Windows.Markup;
 namespace PlayLogger
 {
     /// <summary>
@@ -26,11 +29,21 @@ namespace PlayLogger
         {
             InitializeComponent();
 
+            setColture();
 
             System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
 
 
             this.DataContext = new MainViewModel();
+        }
+
+        private void setColture()
+        {
+            var newCulture = new CultureInfo("en-IN"); ;
+
+            Thread.CurrentThread.CurrentCulture = newCulture;
+            Thread.CurrentThread.CurrentUICulture = newCulture;
+            FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
         }
 
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -83,7 +96,9 @@ namespace PlayLogger
             foreach (var field in DbHandler.SongFields)
             {
 
-                DataGridTextColumn textColumn = new DataGridTextColumn();
+                ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn textColumn = new ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn();
+
+                textColumn.AllowAutoFilter = true;
                 textColumn.Header = field;
                 textColumn.Binding = new System.Windows.Data.Binding(string.Format("Fields[{0}]", field));
 

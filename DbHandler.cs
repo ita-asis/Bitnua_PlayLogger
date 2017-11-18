@@ -65,7 +65,7 @@ namespace PlayLogger
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;
