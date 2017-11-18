@@ -122,7 +122,6 @@ namespace PlayLogger
                         string value = reader.SafeGetString(1);
                         if (SongFields.Contains(fieldName))
                         {
-                            Console.WriteLine("rcdID={0},field={1},value={2}", song.RecordId, fieldName, value);
                             song.Fields[fieldName] = value;
                         }
                     }

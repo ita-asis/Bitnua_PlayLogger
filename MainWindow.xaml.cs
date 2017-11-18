@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Globalization;
 using System.Windows.Markup;
+using System.Reflection;
 namespace PlayLogger
 {
     /// <summary>
@@ -32,9 +33,10 @@ namespace PlayLogger
             setColture();
 
             System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
-
-
             this.DataContext = new MainViewModel();
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            VersionTB.Text = string.Format("Version {0}",assembly.GetName().Version.ToString());
         }
 
         private void setColture()
