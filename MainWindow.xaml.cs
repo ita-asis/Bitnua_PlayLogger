@@ -31,6 +31,8 @@ namespace PlayLogger
             InitializeComponent();
 
             setColture();
+            songInfoDataGrid.Theme = ExtendedGrid.ExtendedGridControl.ExtendedDataGrid.Themes.Default;
+
 
             System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             this.DataContext = new MainViewModel();
@@ -84,7 +86,14 @@ namespace PlayLogger
             }
             else
             {
-                e.Column.DisplayIndex = ++lastColIndex;
+                string field = e.PropertyName;
+                ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn textColumn = new ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn();
+                textColumn.AllowAutoFilter = true;
+                textColumn.Header = field;
+                textColumn.Binding = new System.Windows.Data.Binding(string.Format("{0}", field));
+
+                textColumn.DisplayIndex = ++lastColIndex;
+                e.Column = textColumn;
             }
         }
 
@@ -111,16 +120,44 @@ namespace PlayLogger
                 }
             }
             lastColIndex = -1;
+            songInfoDataGrid.UpdateLayout();
         }
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainViewModel)this.DataContext).Update();
+             ((MainViewModel)this.DataContext).Update();
         }
 
         private void ToggleMonitorButton_Click(object sender, RoutedEventArgs e)
         {
             ((MainViewModel)this.DataContext).ToggleXmlDirMonitor();
         }
+
+
+        private static IEnumerable<Type> GetMatchingTypes(string opcode)
+        {
+            var files = System.IO.Directory.GetFiles(@"C:\Users\iasis\SourceCode\Extended Data Grid 4.5.2.0", "*.dll");
+
+            foreach (var file in files)
+            {
+                Type[] types;
+                try
+                {
+                    types = Assembly.LoadFrom(file).GetTypes();
+                }
+                catch
+                {
+                    continue;  // Can't load as .NET assembly, so ignore
+                }
+
+                var interestingTypes =
+                    types.Where(t => t.IsClass &&
+                                     t.Name.Equals(opcode, StringComparison.InvariantCultureIgnoreCase));
+
+                foreach (var type in interestingTypes)
+                    yield return type;
+            }
+        }
+
     }
 }

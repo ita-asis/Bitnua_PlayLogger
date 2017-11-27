@@ -77,5 +77,17 @@ namespace PlayLogger
                 return null;
             }
         }
+
+        public override string ToString()
+        {
+
+            string type = null;
+            if (Fields.ContainsKey("Type"))
+            {
+                type = Fields["Type"];
+            }
+
+            return string.Format("{0}, {1}, {2}, {3}", Id, Title, PlayLocation, type);
+        }
     }
 }

@@ -55,6 +55,7 @@ namespace PlayLogger
                 m_Songs = value;
                 OnPropertyChanged(() => Songs);
                 OnPropertyChanged(() => ColumnInfo);
+                OnPropertyChanged(() => FilterExpression);
             }
         }
 
@@ -188,9 +189,9 @@ namespace PlayLogger
         }
 
 
-        private List<ColumnInfo> m_ColInfo;
-        private ObservableCollection<ColumnInfo> m_ColumnInfo;
-        public ObservableCollection<ColumnInfo> ColumnInfo
+        private string m_ColInfo;
+        private string m_ColumnInfo;
+        public string ColumnInfo
         {
             get { return m_ColumnInfo; }
             set
@@ -199,20 +200,43 @@ namespace PlayLogger
                 OnPropertyChanged(() => ColumnInfo);
             }
         }
+
+
+        private string m_FilterInfo;
+        private string m_FilterExpression;
+        public string FilterExpression
+        {
+            get { return m_FilterExpression; }
+            set
+            {
+                m_FilterExpression = value;
+                OnPropertyChanged(() => FilterExpression);
+            }
+        }
+
         private void reloadColInfo()
         {
             if (m_ColInfo != null)
             {
-                //System.Threading.Thread.Sleep(5000);
-                ColumnInfo = new ObservableCollection<ColumnInfo>(m_ColInfo);
+                ColumnInfo = m_ColInfo;
             }
+            if (m_FilterInfo != null)
+            {
+                FilterExpression = m_FilterInfo;
+            }
+
         }
 
         private void saveColInfo()
         {
             if (ColumnInfo != null)
             {
-                m_ColInfo = ColumnInfo.ToList();
+                m_ColInfo = ColumnInfo;
+            }
+
+            if (FilterExpression != null)
+            {
+                m_FilterInfo = FilterExpression;
             }
         }
 

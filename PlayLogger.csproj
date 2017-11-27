@@ -79,9 +79,6 @@
       <HintPath>packages\DeltaCompressionDotNet.1.1.0\lib\net20\DeltaCompressionDotNet.PatchApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ExtendedGrid">
-      <HintPath>..\..\..\..\SourceCode\Extended Data Grid 4.5.2.0\ExtendedGrid.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
@@ -143,6 +140,7 @@
     <Compile Include="BindingProxy.cs" />
     <Compile Include="ColumnInfo.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="ExtendedDataGrid_PreserveColumnInfo.cs" />
     <Compile Include="DataGrid_PreserveColumnInfo.cs" />
     <Compile Include="DbHandler.cs" />
     <Compile Include="HideFromDG.cs" />
@@ -322,6 +320,12 @@
       <IncludeHash>True</IncludeHash>
       <FileType>Satellite</FileType>
     </PublishFile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\SourceCode\Extended Data Grid 4.5.2.0\Source\ExtendedGrid\ExtendedGrid.csproj">
+      <Project>{ef568126-a1d2-49cf-a2c1-1edb8dfc3e40}</Project>
+      <Name>ExtendedGrid</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

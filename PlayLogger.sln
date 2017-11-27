@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayLogger", "PlayLogger.csproj", "{9B6F8E9D-E54B-4E8D-9205-E50D45557EB1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtendedGrid", "..\..\..\..\SourceCode\Extended Data Grid 4.5.2.0\Source\ExtendedGrid\ExtendedGrid.csproj", "{EF568126-A1D2-49CF-A2C1-1EDB8DFC3E40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{9B6F8E9D-E54B-4E8D-9205-E50D45557EB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B6F8E9D-E54B-4E8D-9205-E50D45557EB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B6F8E9D-E54B-4E8D-9205-E50D45557EB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF568126-A1D2-49CF-A2C1-1EDB8DFC3E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF568126-A1D2-49CF-A2C1-1EDB8DFC3E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF568126-A1D2-49CF-A2C1-1EDB8DFC3E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF568126-A1D2-49CF-A2C1-1EDB8DFC3E40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -124,7 +124,8 @@
                                     CommandParameter="{Binding SelectedItemsList, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
                     </DataGrid.InputBindings>
                     <i:Interaction.Behaviors>
-                        <local:DataGrid_PreserveColumnInfo ColumnInfo="{Binding Data.ColumnInfo,Source={StaticResource vmProxy}}" />
+                        <local:ExtendedDataGrid_PreserveColumnInfo ColumnInfo="{Binding ColumnInfo}"
+                                                                   Filter="{Binding Filter}"/>
                     </i:Interaction.Behaviors>
                     <!--<DataGrid.Columns>
                         <DataGridTextColumn x:Name="idColumn"
