@@ -80,6 +80,11 @@ namespace PlayLogger
             List<SongInfo> history = null;
             using (var dbCon = new DBConnection())
             {
+                if (!dbCon .IsConnect())
+                {
+                    return null;
+                }
+
                 try
                 {
                     history = new List<SongInfo>();
@@ -125,6 +130,11 @@ namespace PlayLogger
         {
             using (var dbCon = new DBConnection())
             {
+                if (!dbCon.IsConnect())
+                {
+                    return;
+                }
+
                 string query = string.Format("SELECT FieldName,FieldValue FROM FieldData where RecordId = {0}", song.RecordId);
                 var cmd = new MySqlCommand(query, dbCon.Connection);
                 using (var reader = cmd.ExecuteReader())
@@ -149,6 +159,11 @@ namespace PlayLogger
             {
                 using (var dbCon = new DBConnection())
                 {
+                    if (!dbCon.IsConnect())
+                    {
+                        return;
+                    }
+
                     var cmdSong = new MySqlCommand("", dbCon.Connection);
                     cmdSong.CommandText = "INSERT INTO playhistory (Id,Title,LastPlayTime,PlayLocation) VALUES (?id,?title,?lastPlay,?playLoc); select last_insert_id();";
 
@@ -195,6 +210,11 @@ namespace PlayLogger
         {
             using (var dbCon = new DBConnection())
             {
+                if (!dbCon.IsConnect())
+                {
+                    return false;
+                }
+
                 var cmd = new MySqlCommand("", dbCon.Connection);
                 cmd.CommandText = "Select RecordId from playhistory Where Id = ?id AND LastPlayTime = ?lastPlay AND PlayLocation = ?playLoc;";
 
@@ -264,6 +284,11 @@ namespace PlayLogger
                 {
                     using (var dbCon = new DBConnection())
                     {
+                        if (!dbCon.IsConnect())
+                        {
+                            return;
+                        }
+
                         string ids = string.Join(",", from song in i_SongsToRemove select song.RecordId.ToString());
                         var cmdDel = new MySqlCommand("", dbCon.Connection);
                         cmdDel.CommandText = string.Format("Delete FROM playhistory WHERE RecordId in ({0}); Delete FROM FieldData WHERE RecordId in ({0});", ids);

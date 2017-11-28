@@ -18,6 +18,8 @@ namespace PlayLogger
         [STAThread]
         public static void Main()
         {
+            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => DisposeUpdateManager();
+
             checkForUpdates();
             var application = new App();
             application.InitializeComponent();
@@ -26,14 +28,19 @@ namespace PlayLogger
 
         async private static void checkForUpdates()
         {
-
-            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => DisposeUpdateManager();
-
-            using (var mgr = UpdateManager.GitHubUpdateManager("https://github.com/ita-asis/Bitnua_PlayLogger"))
+            try
             {
-                UpdateManager = mgr.Result;
-                await UpdateManager.UpdateApp();
+                using (var mgr = UpdateManager.GitHubUpdateManager("https://github.com/ita-asis/Bitnua_PlayLogger"))
+                {
+                    UpdateManager = mgr.Result;
+                    await UpdateManager.UpdateApp();
+                }
             }
+            catch (Exception ex)
+            {
+                MainViewModel.LogException(ex);
+            }
+            
         }
 
 
@@ -46,7 +53,10 @@ namespace PlayLogger
 
             if (1 == Interlocked.Exchange(ref _isUpdateManagerDisposed, 0))
             {
-                UpdateManager.Dispose();
+                if (UpdateManager!=null)
+                {
+                    UpdateManager.Dispose();
+                }
             }
         }
 

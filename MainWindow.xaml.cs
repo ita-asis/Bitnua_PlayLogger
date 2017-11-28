@@ -37,7 +37,13 @@ namespace PlayLogger
             this.DataContext = new MainViewModel();
 
             Assembly assembly = Assembly.GetExecutingAssembly();
-            VersionTB.Text = string.Format("Version {0}", assembly.GetName().Version.ToString());
+            string version = assembly.GetName().Version.ToString();
+            if (version.Length > 5)
+            {
+                version = version.Substring(0, 5);
+            }
+
+            VersionTB.Text = string.Format("Version {0}", version);
         }
 
         private void setColture()

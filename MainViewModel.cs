@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using System.Windows.Input;
 
 namespace PlayLogger
@@ -17,7 +18,14 @@ namespace PlayLogger
             Songs = null;
             Settings = new PlayHistorySettings();
             loadDataAsync();
+
+            r_UpdateTimer = new Timer(new TimeSpan(0, 1, 0).TotalMilliseconds);
+            r_UpdateTimer.Elapsed += (object sender, ElapsedEventArgs e) => Update();
+            r_UpdateTimer.Start();
         }
+
+
+        private readonly Timer r_UpdateTimer;
 
         private void loadDataAsync()
         {
@@ -70,7 +78,7 @@ namespace PlayLogger
                 bool res = false;
                 using (var con = new DBConnection())
                 {
-                    res = true;
+                    res = con.IsConnect();
                 }
                 return res;
             }
