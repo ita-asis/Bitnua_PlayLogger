@@ -78,15 +78,14 @@ namespace PlayLogger
         {
 
             List<SongInfo> history = null;
-            var dbCon = DBConnection.Instance();
-            if (dbCon.IsConnect())
+            using (var dbCon = new DBConnection())
             {
                 try
                 {
                     history = new List<SongInfo>();
                     string query = string.Format("SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory", extraFiledsCSV());
                     var cmd = new MySqlCommand(query, dbCon.Connection);
-                    
+
                     lock (s_LockDb)
                     {
                         using (var reader = cmd.ExecuteReader())
@@ -124,8 +123,7 @@ namespace PlayLogger
 
         public static void ReadExtraFieldsFromDb(this SongInfo song)
         {
-            var dbCon = DBConnection.Instance();
-            if (dbCon.IsConnect())
+            using (var dbCon = new DBConnection())
             {
                 string query = string.Format("SELECT FieldName,FieldValue FROM FieldData where RecordId = {0}", song.RecordId);
                 var cmd = new MySqlCommand(query, dbCon.Connection);
@@ -149,9 +147,7 @@ namespace PlayLogger
         {
             try
             {
-
-                var dbCon = DBConnection.Instance();
-                if (dbCon.IsConnect())
+                using (var dbCon = new DBConnection())
                 {
                     var cmdSong = new MySqlCommand("", dbCon.Connection);
                     cmdSong.CommandText = "INSERT INTO playhistory (Id,Title,LastPlayTime,PlayLocation) VALUES (?id,?title,?lastPlay,?playLoc); select last_insert_id();";
@@ -197,8 +193,7 @@ namespace PlayLogger
 
         private static bool isSongInfoExistsInDb(SongInfo song, string i_PlayLocation)
         {
-            var dbCon = DBConnection.Instance();
-            if (dbCon.IsConnect())
+            using (var dbCon = new DBConnection())
             {
                 var cmd = new MySqlCommand("", dbCon.Connection);
                 cmd.CommandText = "Select RecordId from playhistory Where Id = ?id AND LastPlayTime = ?lastPlay AND PlayLocation = ?playLoc;";
@@ -212,8 +207,6 @@ namespace PlayLogger
                     return reader.Read();
                 }
             }
-
-            return false;
         }
 
         private static IEnumerable<SongInfo> readSongInfo(PlayHistorySettings args)
@@ -267,13 +260,15 @@ namespace PlayLogger
         {
             try
             {
-                var dbCon = DBConnection.Instance();
-                if (dbCon.IsConnect() && i_SongsToRemove != null && i_SongsToRemove.Any())
+                if (i_SongsToRemove != null && i_SongsToRemove.Any())
                 {
-                    string ids = string.Join(",", from song in i_SongsToRemove select song.RecordId.ToString());
-                    var cmdDel = new MySqlCommand("", dbCon.Connection);
-                    cmdDel.CommandText = string.Format("Delete FROM playhistory WHERE RecordId in ({0}); Delete FROM FieldData WHERE RecordId in ({0});", ids);
-                    cmdDel.ExecuteNonQuery();
+                    using (var dbCon = new DBConnection())
+                    {
+                        string ids = string.Join(",", from song in i_SongsToRemove select song.RecordId.ToString());
+                        var cmdDel = new MySqlCommand("", dbCon.Connection);
+                        cmdDel.CommandText = string.Format("Delete FROM playhistory WHERE RecordId in ({0}); Delete FROM FieldData WHERE RecordId in ({0});", ids);
+                        cmdDel.ExecuteNonQuery();
+                    }
                 }
             }
             catch (Exception ex)

@@ -9,14 +9,15 @@ using System.Diagnostics;
 
 namespace PlayLogger
 {
-    public class DBConnection
+    public class DBConnection : IDisposable
     {
-        private DBConnection()
+        public DBConnection()
         {
             ServerAddress = Config.Instance.Get("DbServer");
             DatabaseName = Config.Instance.Get("DbName");
             UserName = Config.Instance.Get("DbUserName");
             Password = Config.Instance.Get("DbPassword");
+            IsConnect();
         }
         public string ServerAddress { get; set; }
         public string DatabaseName { get; set; }
@@ -30,13 +31,6 @@ namespace PlayLogger
             get { return connection; }
         }
 
-        private static DBConnection _instance = null;
-        public static DBConnection Instance()
-        {
-            if (_instance == null)
-                _instance = new DBConnection();
-            return _instance;
-        }
 
         public bool IsConnect()
         {
@@ -71,7 +65,19 @@ namespace PlayLogger
 
         public void Close()
         {
-            connection.Close();
+            if (connection != null && connection.State == System.Data.ConnectionState.Open)
+            {
+                connection.Close();
+            }
+        }
+
+        public void Dispose()
+        {
+            Close();
+            if (connection != null)
+            {
+                connection.Dispose();
+            }
         }
     }
 }

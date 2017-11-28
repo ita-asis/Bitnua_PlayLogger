@@ -33,12 +33,11 @@ namespace PlayLogger
             setColture();
             songInfoDataGrid.Theme = ExtendedGrid.ExtendedGridControl.ExtendedDataGrid.Themes.Default;
 
-
             System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             this.DataContext = new MainViewModel();
 
             Assembly assembly = Assembly.GetExecutingAssembly();
-            VersionTB.Text = string.Format("Version {0}",assembly.GetName().Version.ToString());
+            VersionTB.Text = string.Format("Version {0}", assembly.GetName().Version.ToString());
         }
 
         private void setColture()
@@ -113,6 +112,7 @@ namespace PlayLogger
                 textColumn.Header = field;
                 textColumn.Binding = new System.Windows.Data.Binding(string.Format("Fields[{0}]", field));
 
+
                 var existingCols = songInfoDataGrid.Columns.Where((col) => (string)col.Header == field);
                 if (!existingCols.Any())
                 {
@@ -121,11 +121,36 @@ namespace PlayLogger
             }
             lastColIndex = -1;
             songInfoDataGrid.UpdateLayout();
+
+            setDummySort();
+
+        }
+
+        private bool dummySorted = false;
+        private void setDummySort()
+        {
+            if (!dummySorted)
+            {
+                var firstCol = songInfoDataGrid.Columns.First();
+                if (songInfoDataGrid.ColumnInfo != null)
+                {
+                    var colInfo = songInfoDataGrid.ColumnInfo.Where(ci => ci.SortDirection != null);
+                    if (!colInfo.Any())
+                    {
+                        firstCol.SortDirection = ListSortDirection.Ascending;
+                    }
+                }
+                else
+                {
+                    firstCol.SortDirection = ListSortDirection.Ascending;
+                }
+                dummySorted = true;
+            }
         }
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
-             ((MainViewModel)this.DataContext).Update();
+            ((MainViewModel)this.DataContext).Update();
         }
 
         private void ToggleMonitorButton_Click(object sender, RoutedEventArgs e)
@@ -156,6 +181,20 @@ namespace PlayLogger
 
                 foreach (var type in interestingTypes)
                     yield return type;
+            }
+        }
+
+        private void exportXlsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Filter = "Excel Worksheet (*.xlsx)|*.xlsx";
+                DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    string filepath = dialog.FileName;
+                    songInfoDataGrid.ExportToExcel(this.Title, filepath, true);
+                }
             }
         }
 

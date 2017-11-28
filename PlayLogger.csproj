@@ -144,8 +144,8 @@
     <Compile Include="DataGrid_PreserveColumnInfo.cs" />
     <Compile Include="DbHandler.cs" />
     <Compile Include="HideFromDG.cs" />
+    <Compile Include="VisibilityConverter.cs" />
     <Compile Include="MainViewModel.cs" />
-    <Compile Include="MultiRowSelectionDataGrid.cs" />
     <Compile Include="PlayHistorySettings.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="SongInfo.cs" />
@@ -326,6 +326,9 @@
       <Project>{ef568126-a1d2-49cf-a2c1-1edb8dfc3e40}</Project>
       <Name>ExtendedGrid</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\if_export_excel_64174.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

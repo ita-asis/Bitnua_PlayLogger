@@ -12,6 +12,8 @@
         Width="525"
         Loaded="Window_Loaded">
     <Window.Resources>
+        <local:VisibilityConverter x:Key="BoolToVis" />
+
         <!--<CollectionViewSource x:Key="songInfoViewSource"
                               d:DesignSource="{d:DesignInstance {x:Type local:SongInfo}, CreateList=True}"
                               Source="{Binding Songs}" />-->
@@ -25,7 +27,7 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
+
         <StackPanel Margin="4,4,4,10">
             <StackPanel Orientation="Horizontal"
                         Margin="2">
@@ -34,8 +36,13 @@
                            HorizontalAlignment="Center"
                            Padding="3" />
                 <TextBox Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                         Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
                          Width="120"
                          Padding="3" />
+                <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                           Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis},ConverterParameter=Collapsed}"
+                           Width="120"
+                           Padding="3" />
 
 
             </StackPanel>
@@ -44,13 +51,21 @@
                 <TextBlock Text="נתיב לתיקיית הXML"
                            HorizontalAlignment="Center"
                            Padding="3" />
-                <TextBox x:Name="LastPlayDirTB"
-                         Text="{Binding Settings.LastPlayedXmlDir,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                         Width="220"
-                         Padding="3" />
-                <Button Content="..."
-                        Padding="5"
-                        Click="BrowseButton_Click" />
+                <StackPanel Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}" Orientation="Horizontal">
+
+                    <TextBox x:Name="LastPlayDirTB"
+                             Text="{Binding Settings.LastPlayedXmlDir,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                             Width="220"
+                             Padding="3" />
+                    <Button Content="..."
+                            Padding="5"
+                            Click="BrowseButton_Click" />
+                </StackPanel>
+                <TextBlock  Text="{Binding Settings.LastPlayedXmlDir,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                            Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis},ConverterParameter=Collapsed}"
+                            Width="Auto"
+                            Padding="3" />
+
             </StackPanel>
 
             <Grid>
@@ -89,45 +104,81 @@
                 </StackPanel>
 
             </Grid>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        Background="#FFD4EAFD">
+
+                <TextBlock Text="גודל תצוגה" />
+                <Slider Grid.Row="1"
+                        Margin="10,0"
+                        Name="_zoom"
+                        Minimum="1"
+                        Maximum="3"
+                        Value="{Binding Settings.ViewScale}"
+                        SmallChange="0.1"
+                        Width="100" />
+            </StackPanel>
 
         </StackPanel>
 
 
         <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
-            <TextBlock Text="היסטוריית ניגון"
-                       TextAlignment="Center"
-                       Background="#FF9EE5FF" />
-            <Grid Grid.Row="1">
-                  <!--DataContext="{StaticResource songInfoViewSource}">-->
+            <Grid>
+                <TextBlock Text="היסטוריית ניגון"
+                           TextAlignment="Center"
+                           Background="#FFCAFDED" />
+                <Button x:Name="exportXlsBtn"
+                        Click="exportXlsBtn_Click"
+                        HorizontalAlignment="Right"
+                        Margin="2"
+                        ToolTip="יצא לאקסל">
+                    <Image Source="pack://application:,,,/Resources/if_export_excel_64174.png"
+                           Width="20" />
+                </Button>
+            </Grid>
 
-                <ex:ExtendedDataGrid x:Name="songInfoDataGrid"
-                          RowDetailsVisibilityMode="VisibleWhenSelected"
-                          ItemsSource="{Binding Songs}"
-                          EnableRowVirtualization="True"
-                          AutoGenerateColumns="True"
-                          AutoGeneratingColumn="songInfoDataGrid_AutoGeneratingColumn"
-                          AutoGeneratedColumns="songInfoDataGrid_AutoGeneratedColumns"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          IsReadOnly="True"
-                                     HideColumnChooser="True"
-                                     SearchAutoFilterVisibility="Visible"
-                                     AutoFilterFontSize="12"
-                                     GroupByControlVisibility="Collapsed">
-                    <DataGrid.InputBindings>
-                        <KeyBinding Key="Delete"
-                                    Command="{Binding Data.DeleteSongCommand,Source={StaticResource vmProxy}}"
-                                    CommandParameter="{Binding SelectedItemsList, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
-                    </DataGrid.InputBindings>
-                    <i:Interaction.Behaviors>
-                        <local:ExtendedDataGrid_PreserveColumnInfo ColumnInfo="{Binding ColumnInfo}"
-                                                                   Filter="{Binding Filter}"/>
-                    </i:Interaction.Behaviors>
-                    <!--<DataGrid.Columns>
+
+
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
+                <Grid>
+                    <Grid.LayoutTransform>
+                        <ScaleTransform ScaleX="{Binding Path=Value, ElementName=_zoom}"
+                                        ScaleY="{Binding Path=Value, ElementName=_zoom}" />
+                    </Grid.LayoutTransform>
+                    <ex:ExtendedDataGrid x:Name="songInfoDataGrid"
+                                         HorizontalAlignment="Left"
+                                         RowDetailsVisibilityMode="VisibleWhenSelected"
+                                         ItemsSource="{Binding Songs}"
+                                         EnableRowVirtualization="True"
+                                         AutoGenerateColumns="True"
+                                         AutoGeneratingColumn="songInfoDataGrid_AutoGeneratingColumn"
+                                         AutoGeneratedColumns="songInfoDataGrid_AutoGeneratedColumns"
+                                         CanUserAddRows="False"
+                                         CanUserDeleteRows="False"
+                                         IsReadOnly="True"
+                                         HideColumnChooser="True"
+                                         SearchAutoFilterVisibility="Visible"
+                                         AutoFilterFontSize="12"
+                                         GroupByControlVisibility="Collapsed">
+                        <DataGrid.InputBindings>
+                            <KeyBinding Key="Delete"
+                                        Command="{Binding Data.DeleteSongCommand,Source={StaticResource vmProxy}}"
+                                        CommandParameter="{Binding SelectedItemsList, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                        </DataGrid.InputBindings>
+                        <i:Interaction.Behaviors>
+                            <local:ExtendedDataGrid_PreserveColumnInfo ColumnInfo="{Binding ColumnInfo}"
+                                                                       Filter="{Binding Filter}" />
+                        </i:Interaction.Behaviors>
+                        <!--<DataGrid.Columns>
                         <DataGridTextColumn x:Name="idColumn"
                                             Width="Auto"
                                             Header="Id"
@@ -146,9 +197,10 @@
                                             Header="LastPlayed"
                                             Binding="{Binding PlayLocation}" />
                     </DataGrid.Columns>-->
-                </ex:ExtendedDataGrid>
+                    </ex:ExtendedDataGrid>
 
-            </Grid>
+                </Grid>
+            </ScrollViewer>
         </Grid>
 
         <Grid Grid.Row="2">
@@ -156,7 +208,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-                <TextBlock Width="50"
+            <TextBlock Width="50"
                        HorizontalAlignment="Left"
                        TextAlignment="Center"
                        Height="15">
@@ -183,6 +235,14 @@
                        FlowDirection="LeftToRight"
                        HorizontalAlignment="Right"
                        Text="Version ..." />
+
+        </Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
         </Grid>
     </Grid>

@@ -31,7 +31,11 @@ namespace PlayLogger
             {
                 saveColInfo();
                 Songs = null;
-                Songs = new ObservableCollection<SongInfo>(args.Result as List<SongInfo>);
+                if (args.Result != null)
+                {
+                    Songs = new ObservableCollection<SongInfo>(args.Result as List<SongInfo>);
+                }
+
                 reloadColInfo();
             };
             bw.RunWorkerAsync();
@@ -59,7 +63,18 @@ namespace PlayLogger
             }
         }
 
-        public bool IsDbConnectionOn { get { return DBConnection.Instance().IsConnect(); } }
+        public bool IsDbConnectionOn
+        {
+            get
+            {
+                bool res = false;
+                using (var con = new DBConnection())
+                {
+                    res = true;
+                }
+                return res;
+            }
+        }
 
 
         private PlayHistorySettings m_Settings;

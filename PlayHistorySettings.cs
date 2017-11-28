@@ -24,5 +24,19 @@ namespace PlayLogger
             set { Config.Instance.Set("PlayLocation", value); }
         }
 
+        public string IsSettingEditable
+        {
+            get { return Config.Instance.Get("IsSettingEditable"); }
+            set { Config.Instance.Set("IsSettingEditable", value); }
+        }
+
+        public double ViewScale
+        {
+            get { return Convert.ToDouble(Config.Instance.Get("ViewScale")); }
+            set { Config.Instance.Set("ViewScale", Convert.ToString(value)); }
+        }
+
+
+
     }
 }
