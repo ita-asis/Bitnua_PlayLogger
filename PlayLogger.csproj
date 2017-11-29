@@ -131,6 +131,10 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WpfAnimatedGif, Version=1.4.15.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\WpfAnimatedGif.1.4.15\lib\net\WpfAnimatedGif.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="App.xaml">
@@ -143,6 +147,7 @@
     <Compile Include="ExtendedDataGrid_PreserveColumnInfo.cs" />
     <Compile Include="DataGrid_PreserveColumnInfo.cs" />
     <Compile Include="DbHandler.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="HideFromDG.cs" />
     <Compile Include="VisibilityConverter.cs" />
     <Compile Include="MainViewModel.cs" />
@@ -329,6 +334,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\if_export_excel_64174.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Spinner.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:local="clr-namespace:PlayLogger"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:ex="clr-namespace:ExtendedGrid.ExtendedGridControl;assembly=ExtendedGrid"
         mc:Ignorable="d"
         x:Class="PlayLogger.MainWindow"
@@ -28,30 +29,17 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+
+
         <StackPanel Margin="4,4,4,10">
-            <StackPanel Orientation="Horizontal"
-                        Margin="2">
 
-                <TextBlock Text="מקום הרקדה"
-                           HorizontalAlignment="Center"
-                           Padding="3" />
-                <TextBox Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                         Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
-                         Width="120"
-                         Padding="3" />
-                <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                           Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis},ConverterParameter=Collapsed}"
-                           Width="120"
-                           Padding="3" />
-
-
-            </StackPanel>
             <StackPanel Orientation="Horizontal"
                         Margin="2">
                 <TextBlock Text="נתיב לתיקיית הXML"
                            HorizontalAlignment="Center"
                            Padding="3" />
-                <StackPanel Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}" Orientation="Horizontal">
+                <StackPanel Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
+                            Orientation="Horizontal">
 
                     <TextBox x:Name="LastPlayDirTB"
                              Text="{Binding Settings.LastPlayedXmlDir,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
@@ -101,37 +89,61 @@
                         </Button.Style>
                     </Button>
 
+                    <StackPanel Margin="4"
+                                VerticalAlignment="Bottom"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Left"
+                                Background="#FFD4EAFD">
+
+                        <TextBlock Text="גודל תצוגה"
+                                   Padding="5" />
+                        <Slider Grid.Row="1"
+                                VerticalAlignment="Center"
+                                Margin="10,0"
+                                Name="_zoom"
+                                Minimum="1"
+                                Maximum="3"
+                                Value="{Binding Settings.ViewScale}"
+                                SmallChange="0.1"
+                                Width="100" />
+                    </StackPanel>
+
                 </StackPanel>
 
             </Grid>
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Left"
-                        Background="#FFD4EAFD">
+            <Grid>
 
-                <TextBlock Text="גודל תצוגה" />
-                <Slider Grid.Row="1"
-                        Margin="10,0"
-                        Name="_zoom"
-                        Minimum="1"
-                        Maximum="3"
-                        Value="{Binding Settings.ViewScale}"
-                        SmallChange="0.1"
-                        Width="100" />
-            </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                            Margin="2">
 
-        </StackPanel>
+                    <TextBlock Text="רחבת הרקדה"
+                               HorizontalAlignment="Center"
+                               Padding="3" />
+                    <TextBox Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                             Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
+                             Width="120"
+                             Padding="3" />
+                    <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                               Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis},ConverterParameter=Collapsed}"
+                               Width="120"
+                               Padding="3" />
 
 
-        <Grid Grid.Row="1">
+                </StackPanel>
+            </Grid>
+
+
+        <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
             <Grid>
-                <TextBlock Text="היסטוריית ניגון"
+
+                <TextBlock Text="ריקודים שרקדו ברחבות"
+                           FontSize="18"
                            TextAlignment="Center"
                            Background="#FFCAFDED" />
                 <Button x:Name="exportXlsBtn"
@@ -143,18 +155,40 @@
                            Width="20" />
                 </Button>
             </Grid>
+        </Grid>
+        </StackPanel>
+
+        <Rectangle Name="sizingElement"
+                   Grid.Row="1"
+                   Fill="Transparent"
+                   Margin="4" />
+
+        <Grid Grid.Row="1">
 
 
+            <Grid Grid.Row="1"
+                  Panel.ZIndex="1"
+                  Visibility="{Binding IsLoading,Converter={StaticResource BoolToVis}}">
+                <Grid Panel.ZIndex="1"
+                      Background="#FD959595"
+                      Opacity="0.1">
 
+                </Grid>
+                <Image Height="100"
+                       Panel.ZIndex="2"
+                       gif:ImageBehavior.AnimatedSource="pack://application:,,,/Resources/Spinner.gif" />
+            </Grid>
             <ScrollViewer Grid.Row="1"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Auto">
-                <Grid>
+                          VerticalScrollBarVisibility="Disabled"
+                          HorizontalScrollBarVisibility="Visible">
+                <Grid Grid.Row="1">
                     <Grid.LayoutTransform>
                         <ScaleTransform ScaleX="{Binding Path=Value, ElementName=_zoom}"
                                         ScaleY="{Binding Path=Value, ElementName=_zoom}" />
                     </Grid.LayoutTransform>
+
                     <ex:ExtendedDataGrid x:Name="songInfoDataGrid"
+                                         MaxHeight="{Binding ElementName=sizingElement,Path=ActualHeight, FallbackValue=1}"
                                          HorizontalAlignment="Left"
                                          RowDetailsVisibilityMode="VisibleWhenSelected"
                                          ItemsSource="{Binding Songs}"
@@ -164,6 +198,7 @@
                                          AutoGeneratedColumns="songInfoDataGrid_AutoGeneratedColumns"
                                          CanUserAddRows="False"
                                          CanUserDeleteRows="False"
+                                         VerticalScrollBarVisibility="Visible"
                                          IsReadOnly="True"
                                          HideColumnChooser="True"
                                          SearchAutoFilterVisibility="Visible"
@@ -198,7 +233,6 @@
                                             Binding="{Binding PlayLocation}" />
                     </DataGrid.Columns>-->
                     </ex:ExtendedDataGrid>
-
                 </Grid>
             </ScrollViewer>
         </Grid>

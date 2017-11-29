@@ -30,7 +30,6 @@ namespace PlayLogger
         }
 
         private bool inWidthChange = false;
-        private bool updatingColumnInfo = false;
         public static readonly DependencyProperty ColumnInfoProperty = DependencyProperty.Register("ColumnInfo",
                 typeof(string), typeof(ExtendedDataGrid_PreserveColumnInfo),
                 new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, ColumnInfoChangedCallback)
@@ -99,10 +98,10 @@ namespace PlayLogger
 
         private void UpdateColumnInfo()
         {
-            updatingColumnInfo = true;
+            //updatingColumnInfo = true;
             ColumnInfo = m_TheDG.GetColumnInformation();
             Filter = m_TheDG.GetAutoFilterInformation();
-            updatingColumnInfo = false;
+            //updatingColumnInfo = false;
         }
         protected void OnColumnReordered(object i_sender, DataGridColumnEventArgs e)
         {

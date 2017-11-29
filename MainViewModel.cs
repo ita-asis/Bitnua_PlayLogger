@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExtendedGrid.Classes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,7 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Timers;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace PlayLogger
 {
@@ -17,46 +20,52 @@ namespace PlayLogger
         {
             Songs = null;
             Settings = new PlayHistorySettings();
-            loadDataAsync();
+            Update();
 
             r_UpdateTimer = new Timer(new TimeSpan(0, 1, 0).TotalMilliseconds);
             r_UpdateTimer.Elapsed += (object sender, ElapsedEventArgs e) => Update();
             r_UpdateTimer.Start();
         }
 
-
-        private readonly Timer r_UpdateTimer;
-
-        private void loadDataAsync()
+        private Dictionary<string, string> m_ColumnHeaders;
+        public Dictionary<string, string> ColumnHeaders
         {
-            BackgroundWorker bw = new BackgroundWorker();
-            bw.DoWork += (object o, DoWorkEventArgs args) =>
+            get
             {
-                args.Result = DbHandler.GetHistoryFromDb();
-
-            };
-            bw.RunWorkerCompleted += (object o, RunWorkerCompletedEventArgs args) =>
-            {
-                saveColInfo();
-                Songs = null;
-                if (args.Result != null)
+                if (m_ColumnHeaders == null)
                 {
-                    Songs = new ObservableCollection<SongInfo>(args.Result as List<SongInfo>);
+                    m_ColumnHeaders = new Dictionary<string, string>();
+                    m_ColumnHeaders.Add("Id", "ID");
+                    m_ColumnHeaders.Add("Title", "שם ריקוד");
+                    m_ColumnHeaders.Add("PlayTime", "נוגן ב");
+                    m_ColumnHeaders.Add("PlayLocation", "רחבה");
+                    m_ColumnHeaders.Add("Fields[Type]", "סוג");
                 }
 
-                reloadColInfo();
-            };
-            bw.RunWorkerAsync();
+                return m_ColumnHeaders;
+            }
         }
+        private readonly Timer r_UpdateTimer;
 
         private void loadData()
         {
             saveColInfo();
-            Songs = null;
-            Songs = new ObservableCollection<SongInfo>(DbHandler.GetHistoryFromDb());
+            var data = DbHandler.GetHistoryFromDb();
+            if (Songs == null)
+            {
+                Songs = new ObservableCollection<SongInfo>(data);
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(DispatcherPriority.Render, new Action(() =>
+                    {
+                        Songs.Clear();
+                        Songs.Add(data);
+                    }));
+            }
+
             reloadColInfo();
         }
-
 
         private ObservableCollection<SongInfo> m_Songs;
         public ObservableCollection<SongInfo> Songs
@@ -67,7 +76,6 @@ namespace PlayLogger
                 m_Songs = value;
                 OnPropertyChanged(() => Songs);
                 OnPropertyChanged(() => ColumnInfo);
-                OnPropertyChanged(() => FilterExpression);
             }
         }
 
@@ -96,9 +104,21 @@ namespace PlayLogger
             }
         }
 
+
+        private bool m_IsLoading;
+        public bool IsLoading
+        {
+            get { return m_IsLoading; }
+            set
+            {
+                m_IsLoading = value;
+                OnPropertyChanged(() => IsLoading);
+            }
+        }
         private object m_LockObj = new object();
         public void Update()
         {
+            IsLoading = true;
             OnPropertyChanged(() => IsDbConnectionOn);
             BackgroundWorker bw = new BackgroundWorker();
             bw.DoWork += (object o, DoWorkEventArgs args) =>
@@ -108,7 +128,7 @@ namespace PlayLogger
                     DbHandler.LogSongInfo(Settings);
                     loadData();
                 }
-
+                IsLoading = false;
             };
 
             bw.RunWorkerAsync();
@@ -225,15 +245,15 @@ namespace PlayLogger
         }
 
 
-        private string m_FilterInfo;
-        private string m_FilterExpression;
-        public string FilterExpression
+        private FilterParam m_FilterInfo;
+        private FilterParam m_Filter;
+        public FilterParam Filter
         {
-            get { return m_FilterExpression; }
+            get { return m_Filter; }
             set
             {
-                m_FilterExpression = value;
-                OnPropertyChanged(() => FilterExpression);
+                m_Filter = value;
+                OnPropertyChanged(() => Filter);
             }
         }
 
@@ -245,7 +265,7 @@ namespace PlayLogger
             }
             if (m_FilterInfo != null)
             {
-                FilterExpression = m_FilterInfo;
+                Filter = m_FilterInfo;
             }
 
         }
@@ -257,9 +277,9 @@ namespace PlayLogger
                 m_ColInfo = ColumnInfo;
             }
 
-            if (FilterExpression != null)
+            if (Filter != null)
             {
-                m_FilterInfo = FilterExpression;
+                m_FilterInfo = Filter;
             }
         }
 

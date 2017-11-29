@@ -31,7 +31,7 @@ namespace PlayLogger
             InitializeComponent();
 
             setColture();
-            songInfoDataGrid.Theme = ExtendedGrid.ExtendedGridControl.ExtendedDataGrid.Themes.Default;
+            songInfoDataGrid.Theme = ExtendedGrid.ExtendedGridControl.ExtendedDataGrid.Themes.Office2007Blue;
 
             System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
             this.DataContext = new MainViewModel();
@@ -45,6 +45,7 @@ namespace PlayLogger
 
             VersionTB.Text = string.Format("Version {0}", version);
         }
+
 
         private void setColture()
         {
@@ -94,12 +95,23 @@ namespace PlayLogger
                 string field = e.PropertyName;
                 ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn textColumn = new ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn();
                 textColumn.AllowAutoFilter = true;
-                textColumn.Header = field;
+                textColumn.Header = getColumnHeader(field);
                 textColumn.Binding = new System.Windows.Data.Binding(string.Format("{0}", field));
 
                 textColumn.DisplayIndex = ++lastColIndex;
                 e.Column = textColumn;
             }
+        }
+
+        private string getColumnHeader(string field)
+        {
+            string res = field;
+            MainViewModel vm = this.DataContext as MainViewModel;
+            if (vm != null && vm.ColumnHeaders.ContainsKey(field))
+            {
+                res = vm.ColumnHeaders[field];
+            }
+            return res;
         }
 
         private bool hideColumn(PropertyDescriptor p)
@@ -115,8 +127,14 @@ namespace PlayLogger
                 ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn textColumn = new ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn();
 
                 textColumn.AllowAutoFilter = true;
-                textColumn.Header = field;
-                textColumn.Binding = new System.Windows.Data.Binding(string.Format("Fields[{0}]", field));
+                string propName = string.Format("Fields[{0}]", field);
+                textColumn.Header = getColumnHeader(propName);
+                if (textColumn.Header == propName)
+                {
+                    textColumn.Header = field;
+                }
+
+                textColumn.Binding = new System.Windows.Data.Binding(propName);
 
 
                 var existingCols = songInfoDataGrid.Columns.Where((col) => (string)col.Header == field);

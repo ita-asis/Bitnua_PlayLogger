@@ -56,14 +56,8 @@ namespace PlayLogger
 
 
                 var songs = GetHistoryFromDb();
-                foreach (var song in songs)
-                {
-                    song.ReadExtraFieldsFromDb();
-                    if (true)
-                    {
+                songs.ReadExtraFieldsFromDb();
 
-                    }
-                }
             }
             catch (Exception)
             {
@@ -80,7 +74,7 @@ namespace PlayLogger
             List<SongInfo> history = null;
             using (var dbCon = new DBConnection())
             {
-                if (!dbCon .IsConnect())
+                if (!dbCon.IsConnect())
                 {
                     return null;
                 }
@@ -89,10 +83,11 @@ namespace PlayLogger
                 {
                     history = new List<SongInfo>();
                     string query = string.Format("SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory", extraFiledsCSV());
-                    var cmd = new MySqlCommand(query, dbCon.Connection);
 
                     lock (s_LockDb)
                     {
+
+                        using (var cmd = new MySqlCommand(query, dbCon.Connection))
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -109,6 +104,7 @@ namespace PlayLogger
                                 history.Add(song);
                             }
                         }
+
                     }
 
                 }
@@ -117,16 +113,13 @@ namespace PlayLogger
                     MainViewModel.LogException(ex);
                 }
 
-                foreach (var item in history)
-                {
-                    item.ReadExtraFieldsFromDb();
-                }
+                history.ReadExtraFieldsFromDb();
             }
 
             return history;
         }
 
-        public static void ReadExtraFieldsFromDb(this SongInfo song)
+        public static void ReadExtraFieldsFromDb(this IEnumerable<SongInfo> songs)
         {
             using (var dbCon = new DBConnection())
             {
@@ -135,26 +128,50 @@ namespace PlayLogger
                     return;
                 }
 
-                string query = string.Format("SELECT FieldName,FieldValue FROM FieldData where RecordId = {0}", song.RecordId);
-                var cmd = new MySqlCommand(query, dbCon.Connection);
+                string query = string.Format("SELECT RecordId, FieldName, FieldValue FROM FieldData where RecordId in ({0})", string.Join(",", (from song in songs select song.RecordId)));
+                using (var cmd = new MySqlCommand(query, dbCon.Connection))
                 using (var reader = cmd.ExecuteReader())
                 {
+                    Dictionary<long, List<Tuple<string, string>>> fieldData = new Dictionary<long, List<Tuple<string, string>>>();
                     while (reader.Read())
                     {
-                        string fieldName = reader.SafeGetString(0);
-                        string value = reader.SafeGetString(1);
-                        if (SongFields.Contains(fieldName))
+                        long recordId = reader.GetInt64(0);
+                        string fieldName = reader.SafeGetString(1);
+                        string value = reader.SafeGetString(2);
+                        if (!fieldData.ContainsKey(recordId))
                         {
-                            song.Fields[fieldName] = value;
+                            fieldData.Add(recordId, new List<Tuple<string, string>>() { new Tuple<string, string>(fieldName, value) });
+                        }
+                        else
+                        {
+                            fieldData[recordId].Add(new Tuple<string, string>(fieldName, value));
+                        }
+                    }
+
+                    foreach (var song in songs)
+                    {
+                        var songFields = fieldData[song.RecordId];
+                        foreach (var fData in songFields)
+                        {
+                            string fieldName = fData.Item1;
+                            string value = fData.Item2;
+
+                            if (SongFields.Contains(fieldName))
+                            {
+                                song.Fields[fieldName] = value;
+                            }
                         }
                     }
                 }
-
             }
         }
 
         public static void LogSongInfo(PlayHistorySettings args)
         {
+            if (args == null)
+            {
+                return;
+            }
             try
             {
                 using (var dbCon = new DBConnection())
@@ -164,41 +181,40 @@ namespace PlayLogger
                         return;
                     }
 
-                    var cmdSong = new MySqlCommand("", dbCon.Connection);
-                    cmdSong.CommandText = "INSERT INTO playhistory (Id,Title,LastPlayTime,PlayLocation) VALUES (?id,?title,?lastPlay,?playLoc); select last_insert_id();";
-
-                    var cmdFields = new MySqlCommand("", dbCon.Connection);
-                    cmdFields.CommandText = "INSERT INTO FieldData (RecordId,FieldName,FieldValue) VALUES (?recordId,?fName,?fValue)";
-                    cmdFields.Prepare();
-
-                    IEnumerable<SongInfo> songs = readSongInfo(args);
-                    foreach (var song in songs)
+                    using (var cmdSong = new MySqlCommand("", dbCon.Connection))
                     {
-
-                        if (!isSongInfoExistsInDb(song, args.PlayLocation))
+                        cmdSong.CommandText = "INSERT INTO playhistory (Id,Title,LastPlayTime,PlayLocation) VALUES (?id,?title,?lastPlay,?playLoc); select last_insert_id();";
+                        using (var cmdFields = new MySqlCommand("", dbCon.Connection))
                         {
-                            cmdSong.Parameters.Clear();
-                            cmdSong.Parameters.AddWithValue("?id", song.Id);
-                            cmdSong.Parameters.AddWithValue("?title", song.Title);
-                            cmdSong.Parameters.AddWithValue("?lastPlay", song.PlayTime);
-                            cmdSong.Parameters.AddWithValue("?playLoc", args.PlayLocation);
+                            cmdFields.CommandText = "INSERT INTO FieldData (RecordId,FieldName,FieldValue) VALUES (?recordId,?fName,?fValue)";
+                            cmdFields.Prepare();
 
-                            song.RecordId = Convert.ToInt64(cmdSong.ExecuteScalar());
-
-                            foreach (var item in song.Fields)
+                            IEnumerable<SongInfo> songs = readSongInfo(args);
+                            foreach (var song in songs)
                             {
-                                cmdFields.Parameters.Clear();
-                                cmdFields.Parameters.AddWithValue("?recordId", song.RecordId);
-                                cmdFields.Parameters.AddWithValue("?fName", item.Key);
-                                cmdFields.Parameters.AddWithValue("?fValue", item.Value);
-                                cmdFields.ExecuteNonQuery();
+                                if (!isSongInfoExistsInDb(song, args.PlayLocation))
+                                {
+                                    cmdSong.Parameters.Clear();
+                                    cmdSong.Parameters.AddWithValue("?id", song.Id);
+                                    cmdSong.Parameters.AddWithValue("?title", song.Title);
+                                    cmdSong.Parameters.AddWithValue("?lastPlay", song.PlayTime);
+                                    cmdSong.Parameters.AddWithValue("?playLoc", args.PlayLocation);
+
+                                    song.RecordId = Convert.ToInt64(cmdSong.ExecuteScalar());
+
+                                    foreach (var item in song.Fields)
+                                    {
+                                        cmdFields.Parameters.Clear();
+                                        cmdFields.Parameters.AddWithValue("?recordId", song.RecordId);
+                                        cmdFields.Parameters.AddWithValue("?fName", item.Key);
+                                        cmdFields.Parameters.AddWithValue("?fValue", item.Value);
+                                        cmdFields.ExecuteNonQuery();
+                                    }
+                                }
                             }
-
                         }
-
                     }
                 }
-
             }
             catch (Exception ex)
             {
@@ -215,16 +231,18 @@ namespace PlayLogger
                     return false;
                 }
 
-                var cmd = new MySqlCommand("", dbCon.Connection);
-                cmd.CommandText = "Select RecordId from playhistory Where Id = ?id AND LastPlayTime = ?lastPlay AND PlayLocation = ?playLoc;";
-
-                cmd.Parameters.AddWithValue("?id", song.Id);
-                cmd.Parameters.AddWithValue("?lastPlay", song.PlayTime);
-                cmd.Parameters.AddWithValue("?playLoc", i_PlayLocation);
-
-                using (var reader = cmd.ExecuteReader())
+                using (var cmd = new MySqlCommand("", dbCon.Connection))
                 {
-                    return reader.Read();
+                    cmd.CommandText = "Select RecordId from playhistory Where Id = ?id AND LastPlayTime = ?lastPlay AND PlayLocation = ?playLoc;";
+
+                    cmd.Parameters.AddWithValue("?id", song.Id);
+                    cmd.Parameters.AddWithValue("?lastPlay", song.PlayTime);
+                    cmd.Parameters.AddWithValue("?playLoc", i_PlayLocation);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        return reader.Read();
+                    }
                 }
             }
         }
@@ -290,9 +308,11 @@ namespace PlayLogger
                         }
 
                         string ids = string.Join(",", from song in i_SongsToRemove select song.RecordId.ToString());
-                        var cmdDel = new MySqlCommand("", dbCon.Connection);
-                        cmdDel.CommandText = string.Format("Delete FROM playhistory WHERE RecordId in ({0}); Delete FROM FieldData WHERE RecordId in ({0});", ids);
-                        cmdDel.ExecuteNonQuery();
+                        using (var cmdDel = new MySqlCommand("", dbCon.Connection))
+                        {
+                            cmdDel.CommandText = string.Format("Delete FROM playhistory WHERE RecordId in ({0}); Delete FROM FieldData WHERE RecordId in ({0});", ids);
+                            cmdDel.ExecuteNonQuery();
+                        }
                     }
                 }
             }
