@@ -16,7 +16,7 @@ namespace PlayLogger
         {
             get
             {
-                string csvFields = ConfigurationManager.AppSettings["SongFieldsToSave"];
+                string csvFields = Config.Instance.Get("SongFieldsToSave");
 
                 return new List<string>(csvFields.Split(','));
             }
@@ -150,15 +150,18 @@ namespace PlayLogger
 
                     foreach (var song in songs)
                     {
-                        var songFields = fieldData[song.RecordId];
-                        foreach (var fData in songFields)
+                        if (fieldData.ContainsKey(song.RecordId))
                         {
-                            string fieldName = fData.Item1;
-                            string value = fData.Item2;
-
-                            if (SongFields.Contains(fieldName))
+                            var songFields = fieldData[song.RecordId];
+                            foreach (var fData in songFields)
                             {
-                                song.Fields[fieldName] = value;
+                                string fieldName = fData.Item1;
+                                string value = fData.Item2;
+
+                                if (SongFields.Contains(fieldName))
+                                {
+                                    song.Fields[fieldName] = value;
+                                }
                             }
                         }
                     }

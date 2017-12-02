@@ -9,7 +9,6 @@ namespace PlayLogger
 {
     public class Config
     {
-        private static Config m_instance;
         private System.Configuration.Configuration cfg;
         private Config()
         {
@@ -22,6 +21,7 @@ namespace PlayLogger
 
         }
 
+        private static Config m_instance;
         public static Config Instance
         {
             get

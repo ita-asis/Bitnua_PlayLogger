@@ -228,7 +228,7 @@ namespace PlayLogger
 
         private bool canDeleteSongs(object obj)
         {
-            return obj != null && ((IList)obj).Count > 0 && Convert.ToBoolean(Config.Instance.Get("CanDeleteSongs"));
+            return obj != null && ((IList)obj).Count > 0 && Convert.ToBoolean(UserSettings.Get("CanDeleteSongs"));
         }
 
 

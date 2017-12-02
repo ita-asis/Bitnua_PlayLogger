@@ -14,26 +14,37 @@ namespace PlayLogger
 
         public string LastPlayedXmlDir
         {
-            get { return Config.Instance.Get("LastPlayedXmlDir"); }
-            set { Config.Instance.Set("LastPlayedXmlDir", value); }
+            get { return UserSettings.Get("LastPlayedXmlDir"); }
+            set { UserSettings.Set("LastPlayedXmlDir", value); }
         }
 
         public string PlayLocation
         {
-            get { return Config.Instance.Get("PlayLocation"); }
-            set { Config.Instance.Set("PlayLocation", value); }
+            get { return UserSettings.Get("PlayLocation"); }
+            set { UserSettings.Set("PlayLocation", value); }
         }
 
-        public string IsSettingEditable
+        public bool IsSettingEditable
         {
-            get { return Config.Instance.Get("IsSettingEditable"); }
-            set { Config.Instance.Set("IsSettingEditable", value); }
+            get
+            {
+                bool value = Convert.ToBoolean(UserSettings.Get("IsSettingEditable"));
+
+                return value || string.IsNullOrWhiteSpace(LastPlayedXmlDir) || string.IsNullOrWhiteSpace(PlayLocation);
+            }
+            set { UserSettings.Set("IsSettingEditable", value); }
+        }
+
+        public bool CanDeleteSongs
+        {
+            get { return Convert.ToBoolean(UserSettings.Get("CanDeleteSongs")); }
+            set { UserSettings.Set("CanDeleteSongs", value); }
         }
 
         public double ViewScale
         {
-            get { return Convert.ToDouble(Config.Instance.Get("ViewScale")); }
-            set { Config.Instance.Set("ViewScale", Convert.ToString(value)); }
+            get { return Convert.ToDouble(UserSettings.Get("ViewScale")); }
+            set { UserSettings.Set("ViewScale", value); }
         }
 
 
