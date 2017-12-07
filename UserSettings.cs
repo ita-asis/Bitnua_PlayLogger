@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -17,6 +18,27 @@ namespace PlayLogger
                 Properties.Settings.Default.Upgrade();
                 Properties.Settings.Default.UpgradeRequired = false;
                 Properties.Settings.Default.Save();
+                checkUpgrade();
+            }
+        }
+
+        private void checkUpgrade()
+        {
+            if (string.IsNullOrEmpty(Properties.Settings.Default.PlayLocation))
+            {
+                const string goodVersion = "1.0.8.0";
+                string appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PlayLogger");
+                var v_dir = Directory.GetDirectories(appPath).FirstOrDefault(d => Directory.GetDirectories(d).Any(dir => dir.Contains(goodVersion)));
+                if (!string.IsNullOrEmpty(v_dir))
+                {
+                    string v_conf = Path.Combine(v_dir, goodVersion ,"user.config");
+                    string currConf = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
+
+                    File.Copy(v_conf, currConf, true);
+
+                    Properties.Settings.Default.Reload();
+                }
+
             }
         }
 

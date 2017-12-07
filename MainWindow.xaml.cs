@@ -37,13 +37,8 @@ namespace PlayLogger
             this.DataContext = new MainViewModel();
 
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string version = assembly.GetName().Version.ToString();
-            if (version.Length > 5)
-            {
-                version = version.Substring(0, 5);
-            }
-
-            VersionTB.Text = string.Format("Version {0}", version);
+            var version = assembly.GetName().Version;
+            VersionTB.Text = string.Format("Version {0}.{1}.{2}", version.Major, version.Minor, version.Build);
         }
 
 
@@ -178,7 +173,7 @@ namespace PlayLogger
         private void setDummySort()
         {
 
-            Action setSort = () => 
+            Action setSort = () =>
             {
                 DataGridColumn col;
                 col = songInfoDataGrid.Columns.FirstOrDefault(c => { return c.SortMemberPath == "PlayTime"; });
