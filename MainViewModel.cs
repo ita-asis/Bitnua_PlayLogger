@@ -22,9 +22,20 @@ namespace PlayLogger
             Settings = new PlayHistorySettings();
             Update();
 
-            r_UpdateTimer = new Timer(new TimeSpan(0, 1, 0).TotalMilliseconds);
+            r_UpdateTimer = new Timer(new TimeSpan(0, getTimerMinutes(), 0).TotalMilliseconds);
             r_UpdateTimer.Elapsed += (object sender, ElapsedEventArgs e) => Update();
             r_UpdateTimer.Start();
+        }
+
+        private static int getTimerMinutes()
+        {
+            int min = Convert.ToInt32(Config.Instance.Get("auto_refreosh_min"));
+            if (min == 0)
+            {
+                min = 10;
+            }
+
+            return min;
         }
 
         private Dictionary<string, string> m_ColumnHeaders;
@@ -244,6 +255,27 @@ namespace PlayLogger
             }
         }
 
+        private Dictionary<string, int> m_InitalColumnOrderMap;
+        public Dictionary<string, int> InitalColumnOrderMap
+        {
+            get
+            {
+                if (m_InitalColumnOrderMap == null)
+                {
+                    var cols = new string[] { "PlayLocation", "Title", "Fields[\"Type\"]", "PlayTime" };
+                    int length = cols.Length;
+                    var res = new Dictionary<string, int>(length);
+                    int i = 0;
+                    foreach (string col in cols)
+                    {
+                        res.Add(col, i++);
+                    }
+                    m_InitalColumnOrderMap = res;
+                }
+
+                return m_InitalColumnOrderMap;
+            }
+        }
 
         private FilterParam m_FilterInfo;
         private FilterParam m_Filter;

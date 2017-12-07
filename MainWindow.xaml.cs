@@ -146,29 +146,56 @@ namespace PlayLogger
             lastColIndex = -1;
             songInfoDataGrid.UpdateLayout();
 
-            setDummySort();
-
+            setDefaults();
         }
 
-        private bool dummySorted = false;
+        private void setDefaults()
+        {
+            if (!isDefaultsSet)
+            {
+                setDefaultColOrder();
+                setDummySort();
+                isDefaultsSet = true;
+            }
+        }
+
+        private void setDefaultColOrder()
+        {
+            var cols = songInfoDataGrid.Columns;
+            var colMap = ((MainViewModel)this.DataContext).InitalColumnOrderMap;
+            foreach (var col in cols)
+            {
+                string colname = col.SortMemberPath;
+                if (colMap.ContainsKey(colname))
+                {
+                    col.DisplayIndex = colMap[colname];
+                }
+            }
+        }
+
+
+        private bool isDefaultsSet = false;
         private void setDummySort()
         {
-            if (!dummySorted)
+
+            Action setSort = () => 
             {
-                var firstCol = songInfoDataGrid.Columns.First();
-                if (songInfoDataGrid.ColumnInfo != null)
+                DataGridColumn col;
+                col = songInfoDataGrid.Columns.FirstOrDefault(c => { return c.SortMemberPath == "PlayTime"; });
+                col.SortDirection = ListSortDirection.Descending;
+            };
+
+            if (songInfoDataGrid.ColumnInfo != null)
+            {
+                var colInfo = songInfoDataGrid.ColumnInfo.Where(ci => ci.SortDirection != null);
+                if (!colInfo.Any())
                 {
-                    var colInfo = songInfoDataGrid.ColumnInfo.Where(ci => ci.SortDirection != null);
-                    if (!colInfo.Any())
-                    {
-                        firstCol.SortDirection = ListSortDirection.Ascending;
-                    }
+                    setSort();
                 }
-                else
-                {
-                    firstCol.SortDirection = ListSortDirection.Ascending;
-                }
-                dummySorted = true;
+            }
+            else
+            {
+                setSort();
             }
         }
 

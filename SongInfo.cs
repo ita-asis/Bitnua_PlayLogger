@@ -8,6 +8,7 @@ namespace PlayLogger
 {
     public class SongInfo
     {
+        [HideFromDG]
         public int Id { get; set; }
 
         public string Title { get; set; }
