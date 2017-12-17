@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -72,7 +73,7 @@ namespace PlayLogger
         {
 
             List<SongInfo> history = null;
-            using (var dbCon = new DBConnection())
+            using (var dbCon = MyDbConnectionBase.CreateInstace())
             {
                 if (!dbCon.IsConnect())
                 {
@@ -86,8 +87,7 @@ namespace PlayLogger
 
                     lock (s_LockDb)
                     {
-
-                        using (var cmd = new MySqlCommand(query, dbCon.Connection))
+                        using (var cmd = dbCon.CreateCmd(query))
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -121,7 +121,7 @@ namespace PlayLogger
 
         public static void ReadExtraFieldsFromDb(this IEnumerable<SongInfo> songs)
         {
-            using (var dbCon = new DBConnection())
+            using (var dbCon = MyDbConnectionBase.CreateInstace())
             {
                 if (!dbCon.IsConnect())
                 {
@@ -129,7 +129,7 @@ namespace PlayLogger
                 }
 
                 string query = string.Format("SELECT RecordId, FieldName, FieldValue FROM FieldData where RecordId in ({0})", string.Join(",", (from song in songs select song.RecordId)));
-                using (var cmd = new MySqlCommand(query, dbCon.Connection))
+                using (var cmd = dbCon.CreateCmd(query))
                 using (var reader = cmd.ExecuteReader())
                 {
                     Dictionary<long, List<Tuple<string, string>>> fieldData = new Dictionary<long, List<Tuple<string, string>>>();
@@ -177,20 +177,19 @@ namespace PlayLogger
             }
             try
             {
-                using (var dbCon = new DBConnection())
+                using (var dbCon = MyDbConnectionBase.CreateInstace())
                 {
                     if (!dbCon.IsConnect())
                     {
                         return;
                     }
 
-                    using (var cmdSong = new MySqlCommand("", dbCon.Connection))
+                    using (var cmdSong = dbCon.CreateCmd())
                     {
-                        cmdSong.CommandText = "INSERT INTO playhistory (Id,Title,LastPlayTime,PlayLocation) VALUES (?id,?title,?lastPlay,?playLoc); select last_insert_id();";
-                        using (var cmdFields = new MySqlCommand("", dbCon.Connection))
+                        cmdSong.CommandText = "INSERT INTO playhistory (Id,Title,LastPlayTime,PlayLocation) VALUES (@id,@title,@lastPlay,@playLoc); SELECT currval('playhistory_recordid_seq');";
+                        using (var cmdFields = dbCon.CreateCmd("INSERT INTO FieldData (RecordId,FieldName,FieldValue) VALUES (@rcdId,@fName,@fValue)"))
                         {
-                            cmdFields.CommandText = "INSERT INTO FieldData (RecordId,FieldName,FieldValue) VALUES (?recordId,?fName,?fValue)";
-                            cmdFields.Prepare();
+                            //cmdFields.Prepare();
 
                             IEnumerable<SongInfo> songs = readSongInfo(args);
                             foreach (var song in songs)
@@ -198,19 +197,19 @@ namespace PlayLogger
                                 if (!isSongInfoExistsInDb(song, args.PlayLocation))
                                 {
                                     cmdSong.Parameters.Clear();
-                                    cmdSong.Parameters.AddWithValue("?id", song.Id);
-                                    cmdSong.Parameters.AddWithValue("?title", song.Title);
-                                    cmdSong.Parameters.AddWithValue("?lastPlay", song.PlayTime);
-                                    cmdSong.Parameters.AddWithValue("?playLoc", args.PlayLocation);
+                                    cmdSong.Parameters.Add(dbCon.CreateParam("@id", song.Id));
+                                    cmdSong.Parameters.Add(dbCon.CreateParam("@title", song.Title));
+                                    cmdSong.Parameters.Add(dbCon.CreateParam("@lastPlay", song.PlayTime));
+                                    cmdSong.Parameters.Add(dbCon.CreateParam("@playLoc", args.PlayLocation));
 
                                     song.RecordId = Convert.ToInt64(cmdSong.ExecuteScalar());
 
                                     foreach (var item in song.Fields)
                                     {
                                         cmdFields.Parameters.Clear();
-                                        cmdFields.Parameters.AddWithValue("?recordId", song.RecordId);
-                                        cmdFields.Parameters.AddWithValue("?fName", item.Key);
-                                        cmdFields.Parameters.AddWithValue("?fValue", item.Value);
+                                        cmdFields.Parameters.Add(dbCon.CreateParam("@rcdId", song.RecordId));
+                                        cmdFields.Parameters.Add(dbCon.CreateParam("@fName", item.Key));
+                                        cmdFields.Parameters.Add(dbCon.CreateParam("@fValue", item.Value));
                                         cmdFields.ExecuteNonQuery();
                                     }
                                 }
@@ -227,20 +226,20 @@ namespace PlayLogger
 
         private static bool isSongInfoExistsInDb(SongInfo song, string i_PlayLocation)
         {
-            using (var dbCon = new DBConnection())
+            using (var dbCon = MyDbConnectionBase.CreateInstace())
             {
                 if (!dbCon.IsConnect())
                 {
                     return false;
                 }
 
-                using (var cmd = new MySqlCommand("", dbCon.Connection))
+                using (var cmd = dbCon.CreateCmd())
                 {
-                    cmd.CommandText = "Select RecordId from playhistory Where Id = ?id AND LastPlayTime = ?lastPlay AND PlayLocation = ?playLoc;";
+                    cmd.CommandText = "Select RecordId from playhistory Where Id = @id AND LastPlayTime = @lastPlay AND PlayLocation = @playLoc;";
 
-                    cmd.Parameters.AddWithValue("?id", song.Id);
-                    cmd.Parameters.AddWithValue("?lastPlay", song.PlayTime);
-                    cmd.Parameters.AddWithValue("?playLoc", i_PlayLocation);
+                    cmd.Parameters.Add(dbCon.CreateParam("@id", song.Id));
+                    cmd.Parameters.Add(dbCon.CreateParam("@lastPlay", song.PlayTime));
+                    cmd.Parameters.Add(dbCon.CreateParam("@playLoc", i_PlayLocation));
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -290,7 +289,7 @@ namespace PlayLogger
 
         }
 
-        public static string SafeGetString(this MySqlDataReader reader, int colIndex)
+        public static string SafeGetString(this DbDataReader reader, int colIndex)
         {
             if (!reader.IsDBNull(colIndex))
                 return reader.GetString(colIndex);
@@ -303,7 +302,7 @@ namespace PlayLogger
             {
                 if (i_SongsToRemove != null && i_SongsToRemove.Any())
                 {
-                    using (var dbCon = new DBConnection())
+                    using (var dbCon = MyDbConnectionBase.CreateInstace())
                     {
                         if (!dbCon.IsConnect())
                         {
@@ -311,7 +310,7 @@ namespace PlayLogger
                         }
 
                         string ids = string.Join(",", from song in i_SongsToRemove select song.RecordId.ToString());
-                        using (var cmdDel = new MySqlCommand("", dbCon.Connection))
+                        using (var cmdDel = dbCon.CreateCmd())
                         {
                             cmdDel.CommandText = string.Format("Delete FROM playhistory WHERE RecordId in ({0}); Delete FROM FieldData WHERE RecordId in ({0});", ids);
                             cmdDel.ExecuteNonQuery();

@@ -6,12 +6,13 @@ using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Configuration;
 using System.Diagnostics;
+using System.Data.Common;
 
 namespace PlayLogger
 {
-    public class DBConnection : IDisposable
+    public class MySqlDbConnectionHandler : MyDbConnectionBase
     {
-        public DBConnection()
+        public MySqlDbConnectionHandler()
         {
             ServerAddress = Config.Instance.Get("DbServer");
             DatabaseName = Config.Instance.Get("DbName");
@@ -19,20 +20,18 @@ namespace PlayLogger
             Password = Config.Instance.Get("DbPassword");
             IsConnect();
         }
-        public string ServerAddress { get; set; }
-        public string DatabaseName { get; set; }
-        public string UserName { get; set; }
-        public string Password { get; set; }
+        private string ServerAddress { get; set; }
+        private string DatabaseName { get; set; }
+        private string UserName { get; set; }
+        private string Password { get; set; }
 
 
-        private MySqlConnection connection = null;
-        public MySqlConnection Connection
+        private MySqlConnection Connection
         {
-            get { return connection; }
+            get { return (MySqlConnection)connection; }
         }
 
-
-        public bool IsConnect()
+        public override bool IsConnect()
         {
             bool result = true;
 
@@ -52,32 +51,25 @@ namespace PlayLogger
                         connection.Open();
                         result = true;
                     }
-
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 result = false;
+                MainViewModel.LogException(ex);
             }
 
             return result;
         }
 
-        public void Close()
+        public override DbCommand CreateCmd(string query = null)
         {
-            if (connection != null && connection.State == System.Data.ConnectionState.Open)
-            {
-                connection.Close();
-            }
+            return new MySqlCommand(query, Connection);
         }
 
-        public void Dispose()
+        public override DbParameter CreateParam(string name, object value)
         {
-            Close();
-            if (connection != null)
-            {
-                connection.Dispose();
-            }
+            return new MySqlParameter(name, value);
         }
     }
 }

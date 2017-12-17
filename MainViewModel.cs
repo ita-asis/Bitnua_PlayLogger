@@ -95,7 +95,7 @@ namespace PlayLogger
             get
             {
                 bool res = false;
-                using (var con = new DBConnection())
+                using (var con = MyDbConnectionBase.CreateInstace())
                 {
                     res = con.IsConnect();
                 }

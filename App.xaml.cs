@@ -26,11 +26,12 @@ namespace PlayLogger
             application.Run();
         }
 
-        async private static void checkForUpdates()
+        private static async void checkForUpdates()
         {
             try
             {
-                using (var mgr = UpdateManager.GitHubUpdateManager("https://github.com/ita-asis/Bitnua_PlayLogger"))
+
+                using (var mgr = getUpdateManager())
                 {
                     UpdateManager = mgr.Result;
                     await UpdateManager.UpdateApp();
@@ -43,6 +44,15 @@ namespace PlayLogger
             
         }
 
+        private static async Task<Squirrel.UpdateManager> getUpdateManager()
+        {
+#if DEBUG
+            return await Task.Run<UpdateManager>(() => new UpdateManager(@"C:\Users\iasis\Documents\Visual Studio 2013\Projects\PlayLogger\Releases"));
+#else
+            return await UpdateManager.GitHubUpdateManager("https://github.com/ita-asis/Bitnua_PlayLogger");
+#endif
+        }
+
 
 
 
@@ -53,7 +63,7 @@ namespace PlayLogger
 
             if (1 == Interlocked.Exchange(ref _isUpdateManagerDisposed, 0))
             {
-                if (UpdateManager!=null)
+                if (UpdateManager != null)
                 {
                     UpdateManager.Dispose();
                 }
