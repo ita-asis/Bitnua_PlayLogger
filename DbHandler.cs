@@ -13,13 +13,13 @@ namespace PlayLogger
     {
 
 
-        public static List<String> SongFields
+        public static HashSet<String> SongFields
         {
             get
             {
                 string csvFields = Config.Instance.Get("SongFieldsToSave");
 
-                return new List<string>(csvFields.Split(','));
+                return new HashSet<string>(csvFields.Split(','));
             }
         }
 
@@ -82,8 +82,8 @@ namespace PlayLogger
 
                 try
                 {
-                    history = new List<SongInfo>();
-                    string query = string.Format("SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory", extraFiledsCSV());
+                    history = new List<ExpandoObject>();
+                    string query = "SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory";
 
                     lock (s_LockDb)
                     {
