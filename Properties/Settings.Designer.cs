@@ -49,7 +49,7 @@ namespace PlayLogger.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\AMPS\\vmmplay")]
         public string LastPlayedXmlDir {
             get {
                 return ((string)(this["LastPlayedXmlDir"]));

@@ -42,7 +42,7 @@ namespace PlayLogger
 
 
             //System.Windows.Application.Current.Activated += (o, e) => { };
-            System.Windows.Application.Current.Deactivated += (o, e) => { settingsPopup.IsOpen = false; };
+            //System.Windows.Application.Current.Deactivated += (o, e) => { settingsPopup.IsOpen = false; };
         }
 
 
@@ -115,34 +115,7 @@ namespace PlayLogger
             bool hide = p.Attributes.OfType<HideFromDGAttribute>().Any();
             return hide;
         }
-
-
-        private void addExtendedPropsColumns()
-        {
-            foreach (var field in DbHandler.SongFields)
-            {
-
-                ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn textColumn = new ExtendedGrid.ExtendedColumn.ExtendedDataGridTextColumn();
-
-                textColumn.AllowAutoFilter = true;
-                string propName = string.Format("Fields[{0}]", field);
-                textColumn.Header = getColumnHeader(propName);
-                if (textColumn.Header == propName)
-                {
-                    textColumn.Header = field;
-                }
-
-                textColumn.Binding = new System.Windows.Data.Binding(propName);
-
-
-                var existingCols = songInfoDataGrid.Columns.Where((col) => (string)col.Header == field);
-                if (!existingCols.Any())
-                {
-                    songInfoDataGrid.Columns.Add(textColumn);
-                }
-            }
-        }
-
+                
         private void setDefaults()
         {
             if (!isDefaultsSet)
@@ -200,7 +173,7 @@ namespace PlayLogger
             ((MainViewModel)this.DataContext).Update();
         }
 
-        
+
 
 
         private static IEnumerable<Type> GetMatchingTypes(string opcode)
@@ -244,7 +217,23 @@ namespace PlayLogger
 
         private void showSettingsPage_Click(object sender, RoutedEventArgs e)
         {
-            
+            var settingsPage = new SettingsPopup();
+            settingsPage.DataContext = this.DataContext;
+
+            var window = new Window() 
+            {
+                Owner = this,
+                FlowDirection = this.FlowDirection,
+                Content = settingsPage,
+                WindowStyle=System.Windows.WindowStyle.ToolWindow,
+                ResizeMode = System.Windows.ResizeMode.NoResize,
+                SizeToContent = System.Windows.SizeToContent.WidthAndHeight,
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+                ShowInTaskbar = false,
+                Title = "הגדרות"
+            };
+            settingsPage.Closing += () => { window.Close(); };
+            window.ShowDialog();
         }
 
     }

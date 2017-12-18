@@ -1,13 +1,16 @@
-﻿using ExtendedGrid.Classes;
+﻿using Dynamitey;
+using ExtendedGrid.Classes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Timers;
 using System.Windows;
@@ -19,22 +22,30 @@ namespace PlayLogger
 {
     public class MainViewModel : ViewModelBase
     {
+        private Timer m_UpdateTimer;
         private MainViewModel()
         {
             setSongs(null);
             Settings = new PlayHistorySettings();
             Update();
 
-            r_UpdateTimer = new Timer(new TimeSpan(0, getTimerMinutes(), 0).TotalMilliseconds);
-            r_UpdateTimer.Elapsed += (object sender, ElapsedEventArgs e) => Update();
-            r_UpdateTimer.Start();
+            Settings.PropertyChanged += restartMonitor;
+            StartMonitoringXmlDir();
+            startUpdateTimer();
+        }
+
+        private void startUpdateTimer()
+        {
+            m_UpdateTimer = new Timer(new TimeSpan(0, getTimerMinutes(), 0).TotalMilliseconds);
+            m_UpdateTimer.Elapsed += (object sender, ElapsedEventArgs e) => Update();
+            m_UpdateTimer.Start();
         }
 
 
         private static MainViewModel s_Instance = null;
         private static object s_ctorLock = new object();
 
-        
+
         public static MainViewModel Instance
         {
             get
@@ -82,23 +93,20 @@ namespace PlayLogger
                 return m_ColumnHeaders;
             }
         }
-        private readonly Timer r_UpdateTimer;
 
         private void loadData()
         {
             saveColInfo();
             var data = DbHandler.GetHistoryFromDb();
             setSongs(data);
-
-
             reloadColInfo();
         }
 
         private IEnumerable<SongInfo> m_Songs;
-        private ObservableCollection<ExpandoObject> m_SongsDynamic;
-        public ObservableCollection<ExpandoObject> Songs
+        private Wpf.DynamicObjectBindingList m_SongsDynamic;
+        public object Songs
         {
-            get 
+            get
             {
                 return m_SongsDynamic;
             }
@@ -109,7 +117,7 @@ namespace PlayLogger
             m_Songs = songs;
             if (songs != null)
             {
-                m_SongsDynamic = new ObservableCollection<ExpandoObject>(songs.ToDynmicObjectList());
+                m_SongsDynamic = new Wpf.DynamicObjectBindingList(songs.ToDynmicObjectList().ToList(), typeof(SongInfo));
             }
             OnPropertyChanged(() => Songs);
             OnPropertyChanged(() => ColumnInfo);
@@ -200,6 +208,15 @@ namespace PlayLogger
             IsMonitoringXmlDir = true;
         }
 
+        private void restartMonitor(object sender, PropertyChangedEventArgs e)
+        {
+            if (IsMonitoringXmlDir && e.PropertyName == GetPropertyName(() => Settings.LastPlayedXmlDir))
+            {
+                StopMonitoringXmlDir();
+                StartMonitoringXmlDir();
+            }
+        }
+
         private void OnXmlDirChanged(object sender, FileSystemEventArgs e)
         {
             Update();
@@ -254,12 +271,12 @@ namespace PlayLogger
 
         private void deleteSongs(object obj)
         {
-            var songsToDelete = ((IList)obj).Cast<SongInfo>().ToList();
-            DbHandler.RemoveSongsFromDb(songsToDelete);
+            var songsToDelete = ((IList)obj).Cast<ExpandoObject>().ToList();
+            var songInfoList = songsToDelete.Select(s => new SongInfo() { RecordId = Dynamic.InvokeGet(s, "RecordId") });
+            DbHandler.RemoveSongsFromDb(songInfoList);
             foreach (var song in songsToDelete)
             {
-                //m_SongsTable.Rows.Remove(row);
-                //Songs.Remove(song);
+                m_SongsDynamic.Remove(song);
             }
         }
 
@@ -317,6 +334,8 @@ namespace PlayLogger
 
         private void reloadColInfo()
         {
+            Debug.WriteLine(MethodBase.GetCurrentMethod().Name);
+            Debug.WriteLine(m_ColInfo);
             if (m_ColInfo != null)
             {
                 ColumnInfo = m_ColInfo;
@@ -330,6 +349,8 @@ namespace PlayLogger
 
         private void saveColInfo()
         {
+            Debug.WriteLine(MethodBase.GetCurrentMethod().Name);
+            Debug.WriteLine(ColumnInfo);
             if (ColumnInfo != null)
             {
                 m_ColInfo = ColumnInfo;

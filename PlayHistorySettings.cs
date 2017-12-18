@@ -6,7 +6,7 @@ using System.Text;
 
 namespace PlayLogger
 {
-    public class PlayHistorySettings
+    public class PlayHistorySettings : ViewModelBase
     {
         public List<string> Files { get; set; }
 
@@ -15,7 +15,11 @@ namespace PlayLogger
         public string LastPlayedXmlDir
         {
             get { return UserSettings.Get("LastPlayedXmlDir"); }
-            set { UserSettings.Set("LastPlayedXmlDir", value); }
+            set
+            {
+                UserSettings.Set("LastPlayedXmlDir", value);
+                OnPropertyChanged(() => LastPlayedXmlDir);
+            }
         }
 
         public string PlayLocation

@@ -9,7 +9,8 @@ namespace PlayLogger
 {
     public class SongInfo
     {
-        [Browsable(false)]
+        [Browsable(true)]
+        [HideFromDG]
         public long RecordId { get; set; }
 
         [Browsable(false)]

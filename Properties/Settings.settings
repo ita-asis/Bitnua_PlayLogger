@@ -9,7 +9,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LastPlayedXmlDir" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">C:\AMPS\vmmplay</Value>
     </Setting>
     <Setting Name="PlayLocation" Type="System.String" Scope="User">
       <Value Profile="(Default)" />

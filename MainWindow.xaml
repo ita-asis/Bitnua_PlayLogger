@@ -10,6 +10,7 @@
         x:Class="PlayLogger.MainWindow"
         Title="Bitnua4Amps"
         Loaded="Window_Loaded"
+        FlowDirection="RightToLeft"
         x:Name="rootWindow">
     <Window.Resources>
         <local:VisibilityConverter x:Key="BoolToVis" />
@@ -21,7 +22,7 @@
                             Data="{Binding}" />
     </Window.Resources>
 
-    <Grid FlowDirection="RightToLeft">
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
@@ -29,14 +30,6 @@
         </Grid.RowDefinitions>
 
 
-        <Popup x:Name="settingsPopup"
-            IsOpen="True"
-               
-               Placement="Center"
-               
-               PlacementTarget="{Binding ElementName=rootWindow}">
-            <local:SettingsPopup />
-        </Popup>
         <StackPanel Margin="4,4,4,10">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -167,7 +160,6 @@
                     <ex:ExtendedDataGrid x:Name="songInfoDataGrid"
                                          MaxHeight="{Binding ElementName=sizingElement,Path=ActualHeight, FallbackValue=1}"
                                          HorizontalAlignment="Left"
-                                         RowDetailsVisibilityMode="VisibleWhenSelected"
                                          ItemsSource="{Binding Songs}"
                                          EnableRowVirtualization="True"
                                          AutoGenerateColumns="True"

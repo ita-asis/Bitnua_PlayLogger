@@ -169,6 +169,8 @@
     <Compile Include="Wpf\ColumnInfo.cs" />
     <Compile Include="UserSettings.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Wpf\DynamicObjectBindingList.cs" />
+    <Compile Include="Wpf\DynamicPropertyDescriptor.cs" />
     <Compile Include="Wpf\ExtendedDataGrid_PreserveColumnInfo.cs" />
     <Compile Include="Wpf\DataGrid_PreserveColumnInfo.cs" />
     <Compile Include="DbHandler.cs" />
