@@ -9,9 +9,8 @@
         mc:Ignorable="d"
         x:Class="PlayLogger.MainWindow"
         Title="Bitnua4Amps"
-        Height="350"
-        Width="525"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        x:Name="rootWindow">
     <Window.Resources>
         <local:VisibilityConverter x:Key="BoolToVis" />
 
@@ -30,72 +29,61 @@
         </Grid.RowDefinitions>
 
 
-
+        <Popup x:Name="settingsPopup"
+            IsOpen="True"
+               
+               Placement="Center"
+               
+               PlacementTarget="{Binding ElementName=rootWindow}">
+            <local:SettingsPopup />
+        </Popup>
         <StackPanel Margin="4,4,4,10">
-
-            <StackPanel Orientation="Horizontal"
-                        Margin="2">
-                <TextBlock Text="נתיב לתיקיית הXML"
-                           HorizontalAlignment="Center"
-                           Padding="3" />
-                <StackPanel Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
-                            Orientation="Horizontal">
-
-                    <TextBox x:Name="LastPlayDirTB"
-                             Text="{Binding Settings.LastPlayedXmlDir,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                             Width="220"
-                             Padding="3" />
-                    <Button Content="..."
-                            Padding="5"
-                            Click="BrowseButton_Click" />
-                </StackPanel>
-                <TextBlock  Text="{Binding Settings.LastPlayedXmlDir,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                            Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis},ConverterParameter=Collapsed}"
-                            Width="Auto"
-                            Padding="3" />
-
-            </StackPanel>
-
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                    
                 <StackPanel Orientation="Horizontal"
                             Grid.Column="0">
-                    <Button Content="עדכן היסטוריית ניגון"
-                            Padding="5"
-                            Margin="4"
-                            Click="UpdateButton_Click" />
                     <Button Padding="5"
                             Margin="4"
-                            Click="ToggleMonitorButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Content"
-                                        Value="עקוב אחר שינויים" />
-                                <Setter Property="Background"
-                                        Value="#FF75F993" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsMonitoringXmlDir}"
-                                                 Value="True">
-                                        <Setter Property="Content"
-                                                Value="הפסק מעקב" />
-                                        <Setter Property="Background"
-                                                Value="#FFFF9C9C" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
+                            VerticalAlignment="Bottom"
+                            Click="UpdateButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center">עדכן היסטוריית ניגון</TextBlock>
+                            <Image Margin="5,0,0,0"
+                                   Source="pack://application:,,,/Resources/icons8-available-updates-80.png"
+                                   Height="25" />
+                        </StackPanel>
                     </Button>
 
+
+
+                    <Button Padding="5"
+                            Margin="4"
+                            HorizontalAlignment="Left"
+                            Click="showSettingsPage_Click"
+                            ToolTip="הגדרות">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center">הגדרות</TextBlock>
+
+                            <Image Margin="5,0,0,0"
+                                   Source="pack://application:,,,/Resources/icons8-automation-50.png"
+                                   Height="25" />
+                        </StackPanel>
+                    </Button>
                     <StackPanel Margin="4"
-                                VerticalAlignment="Bottom"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Left"
                                 Background="#FFD4EAFD">
 
                         <TextBlock Text="גודל תצוגה"
+                                   VerticalAlignment="Center"
                                    Padding="5" />
                         <Slider Grid.Row="1"
                                 VerticalAlignment="Center"
@@ -107,59 +95,44 @@
                                 SmallChange="0.1"
                                 Width="100" />
                     </StackPanel>
-
                 </StackPanel>
 
-            </Grid>
-            <Grid>
-
-                <StackPanel Orientation="Horizontal"
+                <StackPanel Grid.Row="1"
+                            Orientation="Horizontal"
                             Margin="2">
 
                     <TextBlock Text="רחבת הרקדה"
                                HorizontalAlignment="Center"
                                Padding="3" />
-                    <TextBox Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                             Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
-                             Width="120"
-                             Padding="3" />
                     <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                               Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis},ConverterParameter=Collapsed}"
                                Width="120"
                                Padding="3" />
-
-                    <CheckBox Content="אפשר מחיקה"
-                              VerticalContentAlignment="Center"
-                              Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
-                              IsChecked="{Binding Settings.CanDeleteSongs,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" />
-
                 </StackPanel>
             </Grid>
 
-
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
 
-                <TextBlock Text="ריקודים שרקדו ברחבות"
-                           FontSize="18"
-                           TextAlignment="Center"
-                           Background="#FFCAFDED" />
-                <Button x:Name="exportXlsBtn"
-                        Click="exportXlsBtn_Click"
-                        HorizontalAlignment="Right"
-                        Margin="2"
-                        ToolTip="יצא לאקסל">
-                    <Image Source="pack://application:,,,/Resources/if_export_excel_64174.png"
-                           Width="20" />
-                </Button>
+                    <TextBlock Text="ריקודים שרקדו ברחבות"
+                               FontSize="18"
+                               TextAlignment="Center"
+                               Background="#FFCAFDED" />
+                    <Button x:Name="exportXlsBtn"
+                            Click="exportXlsBtn_Click"
+                            HorizontalAlignment="Right"
+                            Margin="2"
+                            ToolTip="יצא לאקסל">
+                        <Image Source="pack://application:,,,/Resources/if_export_excel_64174.png"
+                               Width="20" />
+                    </Button>
+                </Grid>
             </Grid>
-        </Grid>
         </StackPanel>
 
         <Rectangle Name="sizingElement"

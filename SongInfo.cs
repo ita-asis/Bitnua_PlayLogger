@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -8,18 +9,24 @@ namespace PlayLogger
 {
     public class SongInfo
     {
-        [HideFromDG]
+        [Browsable(false)]
+        public long RecordId { get; set; }
+
+        [Browsable(false)]
         public int Id { get; set; }
 
+        [Browsable(true)]
         public string Title { get; set; }
 
+        [Browsable(true)]
         public DateTime PlayTime { get; set; }
 
+        [Browsable(true)]
         public string PlayLocation { get; set; }
 
         private Dictionary<string, string> m_Fields = null;
 
-        [HideFromDG]
+        [Browsable(false)]
         public Dictionary<string, string> Fields
         {
             get
@@ -38,9 +45,7 @@ namespace PlayLogger
             }
         }
 
-        [HideFromDG]
-        public long RecordId { get; set; }
-
+        
         public static SongInfo ReadFromXml(string path)
         {
             try

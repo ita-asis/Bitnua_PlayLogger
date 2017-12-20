@@ -35,39 +35,6 @@ namespace PlayLogger
             return sb.ToString();
         }
 
-
-        public static void test()
-        {
-            try
-            {
-                //var songToInsert = new List<SongInfo>();
-
-                //for (int i = 0; i < 10; i++)
-                //{
-                //    var song = new SongInfo() { Id = 10 + i, Title = string.Format("new Song {0}", i), PlayTime = DateTime.Now.AddDays(-1 * i) };
-                //    song.Fields.Add(string.Format("Field{0}", i), i.ToString());
-                //    songToInsert.Add(song);
-                //}
-
-                //LogSongInfo(songToInsert);
-
-
-                SongInfo s = SongInfo.ReadFromXml("C:\\Users\\iasis\\Desktop\\Dads\\vmmplay\\playing.20171101-134651-346.xml");
-
-
-
-                var songs = GetHistoryFromDb();
-                songs.ReadExtraFieldsFromDb();
-
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
-
-
         public static object s_LockDb = new object();
         public static List<SongInfo> GetHistoryFromDb()
         {
@@ -82,7 +49,7 @@ namespace PlayLogger
 
                 try
                 {
-                    history = new List<ExpandoObject>();
+                    history = new List<SongInfo>();
                     string query = "SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory";
 
                     lock (s_LockDb)

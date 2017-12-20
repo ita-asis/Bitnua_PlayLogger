@@ -4,11 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Timers;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -16,9 +19,9 @@ namespace PlayLogger
 {
     public class MainViewModel : ViewModelBase
     {
-        public MainViewModel()
+        private MainViewModel()
         {
-            Songs = null;
+            setSongs(null);
             Settings = new PlayHistorySettings();
             Update();
 
@@ -27,6 +30,29 @@ namespace PlayLogger
             r_UpdateTimer.Start();
         }
 
+
+        private static MainViewModel s_Instance = null;
+        private static object s_ctorLock = new object();
+
+        
+        public static MainViewModel Instance
+        {
+            get
+            {
+                if (s_Instance == null)
+                {
+                    lock (s_ctorLock)
+                    {
+                        if (s_Instance == null)
+                        {
+                            s_Instance = new MainViewModel();
+                        }
+                    }
+                }
+
+                return s_Instance;
+            }
+        }
         private static int getTimerMinutes()
         {
             int min = Convert.ToInt32(Config.Instance.Get("auto_refreosh_min"));
@@ -62,32 +88,31 @@ namespace PlayLogger
         {
             saveColInfo();
             var data = DbHandler.GetHistoryFromDb();
-            if (Songs == null)
-            {
-                Songs = new ObservableCollection<SongInfo>(data);
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(DispatcherPriority.Render, new Action(() =>
-                    {
-                        Songs.Clear();
-                        Songs.Add(data);
-                    }));
-            }
+            setSongs(data);
+
 
             reloadColInfo();
         }
 
-        private ObservableCollection<SongInfo> m_Songs;
-        public ObservableCollection<SongInfo> Songs
+        private IEnumerable<SongInfo> m_Songs;
+        private ObservableCollection<ExpandoObject> m_SongsDynamic;
+        public ObservableCollection<ExpandoObject> Songs
         {
-            get { return m_Songs; }
-            set
+            get 
             {
-                m_Songs = value;
-                OnPropertyChanged(() => Songs);
-                OnPropertyChanged(() => ColumnInfo);
+                return m_SongsDynamic;
             }
+        }
+
+        public void setSongs(IList<SongInfo> songs)
+        {
+            m_Songs = songs;
+            if (songs != null)
+            {
+                m_SongsDynamic = new ObservableCollection<ExpandoObject>(songs.ToDynmicObjectList());
+            }
+            OnPropertyChanged(() => Songs);
+            OnPropertyChanged(() => ColumnInfo);
         }
 
         public bool IsDbConnectionOn
@@ -233,7 +258,8 @@ namespace PlayLogger
             DbHandler.RemoveSongsFromDb(songsToDelete);
             foreach (var song in songsToDelete)
             {
-                Songs.Remove(song);
+                //m_SongsTable.Rows.Remove(row);
+                //Songs.Remove(song);
             }
         }
 

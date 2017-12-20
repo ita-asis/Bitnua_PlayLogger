@@ -85,6 +85,10 @@
       <HintPath>packages\DeltaCompressionDotNet.1.1.0\lib\net20\DeltaCompressionDotNet.PatchApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Dynamitey, Version=1.0.2.0, Culture=neutral, PublicKeyToken=cbf53ea3aeb972c6, processorArchitecture=MSIL">
+      <HintPath>packages\Dynamitey.1.0.2.0\lib\net40\Dynamitey.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
@@ -158,6 +162,9 @@
     <Compile Include="eDataBaseTypes.cs" />
     <Compile Include="MyDbConnectionBase.cs" />
     <Compile Include="PostgreSqlDbConnectionHandler.cs" />
+    <Compile Include="SettingsPopup.xaml.cs">
+      <DependentUpon>SettingsPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Wpf\BindingProxy.cs" />
     <Compile Include="Wpf\ColumnInfo.cs" />
     <Compile Include="UserSettings.cs" />
@@ -186,6 +193,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SettingsPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -358,6 +369,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\squirrelCmd.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icons8-automation-50.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icons8-available-updates-80.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icons8-close-80.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
