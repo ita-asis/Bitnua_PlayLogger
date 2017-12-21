@@ -25,7 +25,5 @@ namespace PlayLogger
             application.InitializeComponent();
             application.Run();
         }
-
-      
     }
 }

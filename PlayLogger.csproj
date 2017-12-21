@@ -361,12 +361,6 @@
     </PublishFile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\SourceCode\Extended Data Grid 4.5.2.0\Source\ExtendedGrid\ExtendedGrid.csproj">
-      <Project>{ef568126-a1d2-49cf-a2c1-1edb8dfc3e40}</Project>
-      <Name>ExtendedGrid</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\if_export_excel_64174.png" />
   </ItemGroup>
   <ItemGroup>
@@ -383,6 +377,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\icons8-close-80.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ExtendedGrid\ExtendedGrid.csproj">
+      <Project>{ef568126-a1d2-49cf-a2c1-1edb8dfc3e40}</Project>
+      <Name>ExtendedGrid</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\StrongNamer.0.0.6\build\StrongNamer.targets" Condition="Exists('packages\StrongNamer.0.0.6\build\StrongNamer.targets')" />
