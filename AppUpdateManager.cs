@@ -1,6 +1,7 @@
 ﻿using Squirrel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -41,12 +42,16 @@ namespace PlayLogger
         {
             try
             {
-
                 using (var mgr = getUpdateManager())
                 {
                     UpdateManager = mgr.Result;
                     var updateTask = UpdateManager.UpdateApp(OnVersionUpdateProgressChanged);
-                    //var completedTask = updateTask.ContinueWith((e) => { UpdateManager.RestartApp(); });
+                    var completedTask = updateTask.ContinueWith((e) => {
+                        if (e.Result != null)
+                        {
+                            UpdateManager.RestartApp(); 
+                        }
+                    });
                     await updateTask;
                 }
             }
