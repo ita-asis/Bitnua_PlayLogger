@@ -52,8 +52,5 @@ namespace PlayLogger
             get { return Convert.ToDouble(UserSettings.Get("ViewScale")); }
             set { UserSettings.Set("ViewScale", value); }
         }
-
-
-
     }
 }

@@ -25,6 +25,7 @@ namespace PlayLogger
         private Timer m_UpdateTimer;
         private MainViewModel()
         {
+            listenToAppUpdate();
             setSongs(null);
             Settings = new PlayHistorySettings();
             Update();
@@ -32,6 +33,48 @@ namespace PlayLogger
             Settings.PropertyChanged += restartMonitor;
             StartMonitoringXmlDir();
             startUpdateTimer();
+
+        }
+
+        private void listenToAppUpdate()
+        {
+            AppUpdateManager.VersionUpdateProgressChanged += (progress) =>
+            {
+                AppUpdateProgress = progress;
+            };
+        }
+
+
+        private int m_AppUpdateProgress;
+        public int AppUpdateProgress
+        {
+            get { return m_AppUpdateProgress; }
+            set
+            {
+                m_AppUpdateProgress = value;
+                if (AppUpdateProgress > 0 && AppUpdateProgress < 100)
+                {
+                    UpdateVersionText = string.Format("Updating app... progress: {0}", AppUpdateProgress);
+                }
+                else
+                {
+                    UpdateVersionText = null;
+                }
+
+                OnPropertyChanged(() => AppUpdateProgress);
+            }
+        }
+
+
+        private string m_UpdateVersionText;
+        public string UpdateVersionText
+        {
+            get { return m_UpdateVersionText; }
+            set
+            {
+                m_UpdateVersionText = value;
+                OnPropertyChanged(() => UpdateVersionText);
+            }
         }
 
         private void startUpdateTimer()

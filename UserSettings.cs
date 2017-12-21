@@ -35,21 +35,30 @@ namespace PlayLogger
                     string currConf = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
 
                     File.Copy(v_conf, currConf, true);
-
                     Properties.Settings.Default.Reload();
                 }
 
             }
         }
 
-        private static UserSettings m_instance;
+        private static UserSettings s_instance;
+        private static object s_lock = new object();
         public static UserSettings Instance
         {
             get
             {
-                if (m_instance == null)
-                    m_instance = new UserSettings();
-                return m_instance;
+                if (s_instance == null)
+                {
+                    lock (s_lock)
+                    {
+                        if (s_instance == null)
+                        {
+                            s_instance = new UserSettings();
+                        }
+                    }
+                }
+
+                return s_instance;
             }
         }
 

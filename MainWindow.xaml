@@ -5,7 +5,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:local="clr-namespace:PlayLogger"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
-        xmlns:ex="clr-namespace:ExtendedGrid.ExtendedGridControl;assembly=ExtendedGrid"
+        xmlns:ex="clr-namespace:ExtendedGrid.ExtendedGridControl;assembly=ExtendedGrid,Version=4.5.2.0,Culture=neutral,PublicKeyToken=55e545a69d19f95c"
         mc:Ignorable="d"
         x:Class="PlayLogger.MainWindow"
         Title="Bitnua4Amps"
@@ -22,7 +22,7 @@
                             Data="{Binding}" />
     </Window.Resources>
 
-    <Grid >
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
@@ -40,7 +40,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                    
+
                 <StackPanel Orientation="Horizontal"
                             Grid.Column="0">
                     <Button Padding="5"
@@ -234,12 +234,18 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
-            <TextBlock Grid.Column="1"
-                       x:Name="VersionTB"
-                       FlowDirection="LeftToRight"
-                       HorizontalAlignment="Right"
-                       Text="Version ..." />
 
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        FlowDirection="LeftToRight"
+                        Grid.Column="1">
+
+                <TextBlock x:Name="VersionTB"
+                           Margin="0,0,5,0"
+                           Text="Version ..." />
+                
+                <TextBlock Text="{Binding UpdateVersionText}" />
+            </StackPanel>
         </Grid>
 
         <Grid>

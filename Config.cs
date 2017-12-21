@@ -43,15 +43,8 @@ namespace PlayLogger
         }
         public void Set(string key, string value)
         {
-            //return;
-
             cfg.AppSettings.Settings[key].Value = value;
             cfg.Save();
-
-
-            //Configuration config = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
-            //config.AppSettings.Settings[key].Value = value;
-            //config.Save(ConfigurationSaveMode.Modified);
         }
 
 
