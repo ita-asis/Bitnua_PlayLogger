@@ -59,6 +59,7 @@
 
                     <Button Padding="5"
                             Margin="4"
+                            Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
                             HorizontalAlignment="Left"
                             Click="showSettingsPage_Click"
                             ToolTip="הגדרות">

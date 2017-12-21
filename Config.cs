@@ -21,14 +21,24 @@ namespace PlayLogger
 
         }
 
-        private static Config m_instance;
+        private static Config s_instance;
+        private static object s_lock = new object();
         public static Config Instance
         {
             get
             {
-                if (m_instance == null)
-                    m_instance = new Config();
-                return m_instance;
+                if (s_instance == null)
+                {
+                    lock (s_lock)
+                    {
+                        if (s_instance == null)
+                        {
+                            s_instance = new Config();
+                        }
+                    }
+                }
+
+                return s_instance;
             }
         }
         public void Set(string key, string value)

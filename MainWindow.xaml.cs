@@ -232,7 +232,6 @@ namespace PlayLogger
                 ShowInTaskbar = false,
                 Title = "הגדרות"
             };
-            settingsPage.Closing += () => { window.Close(); };
             window.ShowDialog();
         }
 

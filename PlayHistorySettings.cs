@@ -33,8 +33,10 @@ namespace PlayLogger
             get
             {
                 bool value = Convert.ToBoolean(UserSettings.Get("IsSettingEditable"));
+                bool confVal = Convert.ToBoolean(Config.Instance.Get("IsSettingEditable"));
 
-                return value || string.IsNullOrWhiteSpace(LastPlayedXmlDir) || string.IsNullOrWhiteSpace(PlayLocation);
+
+                return confVal ||value || string.IsNullOrWhiteSpace(LastPlayedXmlDir) || string.IsNullOrWhiteSpace(PlayLocation);
             }
             set { UserSettings.Set("IsSettingEditable", value); }
         }
