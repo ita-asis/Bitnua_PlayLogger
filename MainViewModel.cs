@@ -52,7 +52,7 @@ namespace PlayLogger
             set
             {
                 m_AppUpdateProgress = value;
-                if (AppUpdateProgress > 0 && AppUpdateProgress < 100)
+                if (AppUpdateProgress > 0 && AppUpdateProgress < 99)
                 {
                     UpdateVersionText = string.Format("Updating app... progress: {0}", AppUpdateProgress);
                 }
