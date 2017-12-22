@@ -101,7 +101,7 @@ namespace ExtendedGrid.Classes
                 ICollectionView view = CollectionViewSource.GetDefaultView(grid.ItemsSource);
                 _view = view;
                 var unquieValues = new HashSet<string>();
-                foreach (var rowData in grid.ItemsSource)
+                foreach (var rowData in grid.Items)
                 {
                     if (columnNameHasIndexer(columnName))
                     {
@@ -851,9 +851,9 @@ namespace ExtendedGrid.Classes
                     int lastIndex = actaulFilter.IndexOf(")", StringComparison.Ordinal);
                     actaulFilter = actaulFilter.Substring(0, lastIndex);
                     string relalValue = "[" + columnName + "]" + " " + " IN " + "(" + actaulFilter + ")";
-                    if (newFilter.Contains("(" + "[" + relalValue + "]" + ")"))
+                    if (newFilter.Contains("("  + relalValue +  ")"))
                     {
-                        newFilter = newFilter.Replace("(" + "[" + relalValue + "]" + ")", "");
+                        newFilter = newFilter.Replace("(" + relalValue + ")", "");
                         if (newFilter.IndexOf("( AND (", StringComparison.Ordinal) == 0)
                         {
                             newFilter = newFilter.Replace("( AND (", "");
