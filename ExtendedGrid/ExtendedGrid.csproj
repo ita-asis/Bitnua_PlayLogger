@@ -83,6 +83,7 @@
     <Compile Include="Classes\Helper.cs" />
     <Compile Include="Classes\Helpers.cs" />
     <Compile Include="Classes\EportToExcelService.cs" />
+    <Compile Include="Classes\LinqExtensions.cs" />
     <Compile Include="Classes\RowSummariesHelper.cs" />
     <Compile Include="Classes\ScrollingPreviewData.cs" />
     <Compile Include="Classes\ScrollingPreviewService.cs" />

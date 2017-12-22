@@ -73,6 +73,7 @@ namespace ExtendedGrid.Classes
                 {
                     object value = row[columnName];
                     var strValue = Convert.ToString(value);
+
                     if (!valuesHash.Contains(strValue))
                     {
                         CheckedListItem currValue = null;
@@ -133,6 +134,10 @@ namespace ExtendedGrid.Classes
                             {
                                 data = propertyValue.GetValue(rowData, null) == null ? null : Convert.ToString(propertyValue.GetValue(rowData, null));
                             }
+                        }
+                        if (string.IsNullOrEmpty(data))
+                        {
+                            data = string.Empty;
                         }
                         if (!unquieValues.Contains(data))
                         {
@@ -1737,7 +1742,6 @@ namespace ExtendedGrid.Classes
             Boolean.TryParse(Convert.ToString(row["_filter"]), out returnValue);
             // compute the expression
             returnValue = returnValue && computeIndexedFilter(row);
-            System.Diagnostics.Debug.WriteLine(string.Format("filterPredicate:{0},obj:{1}", returnValue, obj.ToString()));
             return returnValue;
         }
 
@@ -1748,7 +1752,7 @@ namespace ExtendedGrid.Classes
                 foreach (var propname in Dynamic.GetMemberNames(obj))
                 {
                     object val = Dynamic.InvokeGet(obj, propname);
-                    row[propname] = val;
+                    row[propname] = val ?? string.Empty;
                 }
             }
             else

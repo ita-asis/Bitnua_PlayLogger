@@ -1,5 +1,6 @@
 ﻿using Dynamitey;
 using ExtendedGrid.Classes;
+using PlayLogger.Wpf;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Data;
@@ -203,22 +205,28 @@ namespace PlayLogger
             }
         }
         private object m_LockObj = new object();
-        public void Update()
+        public async void Update(PlayHistorySettings args = null)
         {
+            if (args == null)
+            {
+                args = Settings;
+            }
+
+            Debug.WriteLine("running Update...");
             IsLoading = true;
             OnPropertyChanged(() => IsDbConnectionOn);
-            BackgroundWorker bw = new BackgroundWorker();
-            bw.DoWork += (object o, DoWorkEventArgs args) =>
+
+            await Task.Run(() =>
             {
                 lock (m_LockObj)
                 {
-                    DbHandler.LogSongInfo(Settings);
+                    DbHandler.LogSongInfo(args);
                     loadData();
+                    Debug.WriteLine("running Update complete");
                 }
                 IsLoading = false;
-            };
+            });
 
-            bw.RunWorkerAsync();
         }
 
 
@@ -233,8 +241,7 @@ namespace PlayLogger
             }
         }
 
-
-        FileSystemWatcher watcher = null;
+        FileSystemMonitor monitor;
         public void StartMonitoringXmlDir()
         {
             if (!Directory.Exists(Settings.LastPlayedXmlDir))
@@ -242,13 +249,27 @@ namespace PlayLogger
                 return;
             }
 
-            watcher = new FileSystemWatcher();
-            watcher.Path = Settings.LastPlayedXmlDir;
-            watcher.NotifyFilter = NotifyFilters.LastWrite;
-            watcher.Filter = "*.xml";
-            watcher.Changed += new FileSystemEventHandler(OnXmlDirChanged);
-            watcher.EnableRaisingEvents = true;
+            var watcherArgs = new FileSystemWatcherArgs()
+            {
+                Path = Settings.LastPlayedXmlDir,
+                NotifyFilter = NotifyFilters.LastWrite,
+                Filter = "*.xml"
+            };
+            monitor = new FileSystemMonitor(watcherArgs);
+            monitor.FilesChanged += monitor_FilesChanged;
+
             IsMonitoringXmlDir = true;
+        }
+
+        private void monitor_FilesChanged(IEnumerable<string> files)
+        {
+            Debug.WriteLine(MethodBase.GetCurrentMethod().Name);
+            PlayHistorySettings args = new PlayHistorySettings()
+            {
+                Files = files,
+                PlayLocation = Settings.PlayLocation
+            };
+            Update(args);
         }
 
         private void restartMonitor(object sender, PropertyChangedEventArgs e)
@@ -260,19 +281,13 @@ namespace PlayLogger
             }
         }
 
-        private void OnXmlDirChanged(object sender, FileSystemEventArgs e)
-        {
-            Update();
-        }
         public void StopMonitoringXmlDir()
         {
-            if (watcher != null)
+            if (monitor != null)
             {
-                watcher.EnableRaisingEvents = false;
-                watcher.Changed -= new FileSystemEventHandler(OnXmlDirChanged);
-                watcher.Dispose();
-                IsMonitoringXmlDir = false;
+                monitor.Dispose();
             }
+            IsMonitoringXmlDir = false;
         }
 
         internal void ToggleXmlDirMonitor()
@@ -377,8 +392,6 @@ namespace PlayLogger
 
         private void reloadColInfo()
         {
-            Debug.WriteLine(MethodBase.GetCurrentMethod().Name);
-            Debug.WriteLine(m_ColInfo);
             if (m_ColInfo != null)
             {
                 ColumnInfo = m_ColInfo;
@@ -392,8 +405,6 @@ namespace PlayLogger
 
         private void saveColInfo()
         {
-            Debug.WriteLine(MethodBase.GetCurrentMethod().Name);
-            Debug.WriteLine(ColumnInfo);
             if (ColumnInfo != null)
             {
                 m_ColInfo = ColumnInfo;

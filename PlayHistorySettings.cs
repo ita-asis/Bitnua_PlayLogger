@@ -8,7 +8,7 @@ namespace PlayLogger
 {
     public class PlayHistorySettings : ViewModelBase
     {
-        public List<string> Files { get; set; }
+        public IEnumerable<string> Files { get; set; }
 
         public bool ReadFileListOnly { get { return Files != null && Files.Any(); } }
 

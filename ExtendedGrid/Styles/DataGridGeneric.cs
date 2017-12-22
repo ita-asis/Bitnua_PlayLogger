@@ -132,10 +132,17 @@ namespace ExtendedGrid.Styles
         {
             foreach (var item in i_prev)
             {
-                var searchItemInNew = i_new.Any(c => c != null && c.Name.ToString() == item.Name.ToString());
-                if (item.IsChecked && !searchItemInNew)
+                if (item.IsChecked)
                 {
-                    i_new.Insert(1, item);
+                    var itemInNew = i_new.Where(c => c != null && Convert.ToString(c.Name) == Convert.ToString(item.Name));
+                    if (!itemInNew.Any())
+                    {
+                        i_new.Insert(1, item);
+                    }
+                    else
+                    {
+                        itemInNew.ForEach(ci => ci.IsChecked = true);
+                    }
                 }
             }
 
