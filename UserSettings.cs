@@ -31,7 +31,7 @@ namespace PlayLogger
                 var v_dir = Directory.GetDirectories(appPath).FirstOrDefault(d => Directory.GetDirectories(d).Any(dir => dir.Contains(goodVersion)));
                 if (!string.IsNullOrEmpty(v_dir))
                 {
-                    string v_conf = Path.Combine(v_dir, goodVersion ,"user.config");
+                    string v_conf = Path.Combine(v_dir, goodVersion, "user.config");
                     string currConf = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
 
                     File.Copy(v_conf, currConf, true);
@@ -74,21 +74,13 @@ namespace PlayLogger
         }
 
 
-        public static string Get(string key)
+        public static object Get(string key)
         {
             return Instance.GetValue(key);
         }
-        public string GetValue(string key)
+        public object GetValue(string key)
         {
-            var item = Properties.Settings.Default[key];
-            if (item != null)
-            {
-                return Convert.ToString(item);
-            }
-            else
-            {
-                return null;
-            }
+            return Properties.Settings.Default[key];
         }
     }
 }

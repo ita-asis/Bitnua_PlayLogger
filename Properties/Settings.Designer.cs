@@ -106,5 +106,16 @@ namespace PlayLogger.Properties {
                 this["UpgradeRequired"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::PlayLogger.Properties.WindowLocationSettings LastWindowLoc {
+            get {
+                return ((global::PlayLogger.Properties.WindowLocationSettings)(this["LastWindowLoc"]));
+            }
+            set {
+                this["LastWindowLoc"] = value;
+            }
+        }
     }
 }

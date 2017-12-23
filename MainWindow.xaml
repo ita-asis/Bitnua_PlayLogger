@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:local="clr-namespace:PlayLogger"
+        xmlns:localWpf="clr-namespace:PlayLogger.Wpf"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:ex="clr-namespace:ExtendedGrid.ExtendedGridControl;assembly=ExtendedGrid,Version=4.5.2.0,Culture=neutral,PublicKeyToken=55e545a69d19f95c"
         mc:Ignorable="d"
@@ -12,6 +13,9 @@
         Loaded="Window_Loaded"
         FlowDirection="RightToLeft"
         x:Name="rootWindow">
+    <i:Interaction.Behaviors>
+        <localWpf:RememberWindowSizeAndPositionBehavior />
+    </i:Interaction.Behaviors>
     <Window.Resources>
         <local:VisibilityConverter x:Key="BoolToVis" />
 

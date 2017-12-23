@@ -11,8 +11,6 @@ namespace PlayLogger
 {
     public static class DbHandler
     {
-
-
         public static HashSet<String> SongFields
         {
             get
@@ -74,13 +72,13 @@ namespace PlayLogger
 
                     }
 
+                    history.ReadExtraFieldsFromDb();
                 }
                 catch (MySqlException ex)
                 {
                     MainViewModel.LogException(ex);
                 }
 
-                history.ReadExtraFieldsFromDb();
             }
 
             return history;

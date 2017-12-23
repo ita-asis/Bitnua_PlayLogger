@@ -166,6 +166,8 @@
     <Compile Include="FileSystemWatcherArgs.cs" />
     <Compile Include="MyDbConnectionBase.cs" />
     <Compile Include="PostgreSqlDbConnectionHandler.cs" />
+    <Compile Include="Wpf\RememberWindowSizeAndPositionBehavior.cs" />
+    <Compile Include="Properties\WindowLocationSettings.cs" />
     <Compile Include="SettingsPopup.xaml.cs">
       <DependentUpon>SettingsPopup.xaml</DependentUpon>
     </Compile>

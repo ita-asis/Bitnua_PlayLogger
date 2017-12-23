@@ -14,7 +14,7 @@ namespace PlayLogger
 
         public string LastPlayedXmlDir
         {
-            get { return UserSettings.Get("LastPlayedXmlDir"); }
+            get { return Convert.ToString(UserSettings.Get("LastPlayedXmlDir")); }
             set
             {
                 UserSettings.Set("LastPlayedXmlDir", value);
@@ -24,7 +24,7 @@ namespace PlayLogger
 
         public string PlayLocation
         {
-            get { return UserSettings.Get("PlayLocation"); }
+            get { return Convert.ToString(UserSettings.Get("PlayLocation")); }
             set { UserSettings.Set("PlayLocation", value); }
         }
 

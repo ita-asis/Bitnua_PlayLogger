@@ -17,7 +17,6 @@ namespace PlayLogger.Wpf
     public class DynamicObjectBindingList : ObservableCollection<ExpandoObject>, ITypedList
     {
         [NonSerialized()]
-        private PropertyDescriptorCollection properties;
         private Type m_elementType;
 
         public DynamicObjectBindingList(Type elementType = null)
