@@ -16,9 +16,11 @@ namespace PlayLogger
         private AppUpdateManager()
         {
             AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => DisposeUpdateManager();
+#pragma warning disable 4014
             checkForUpdates();
+#pragma warning restore 4014
         }
-        
+
         public static AppUpdateManager Instance
         {
             get
@@ -37,19 +39,19 @@ namespace PlayLogger
                 return s_instance;
             }
         }
-        
-        private static async void checkForUpdates()
+
+        private static async Task checkForUpdates()
         {
             try
             {
-                using (var mgr = getUpdateManager())
+                using (s_UpdateManager = await getUpdateManager())
                 {
-                    UpdateManager = mgr.Result;
-                    var updateTask = UpdateManager.UpdateApp(OnVersionUpdateProgressChanged);
-                    var completedTask = updateTask.ContinueWith((e) => {
+                    var updateTask = s_UpdateManager.UpdateApp(OnVersionUpdateProgressChanged);
+                    var completedTask = updateTask.ContinueWith((e) =>
+                    {
                         if (e.Result != null)
                         {
-                            UpdateManager.RestartApp(); 
+                            UpdateManager.RestartApp();
                         }
                     });
                     await updateTask;
@@ -59,7 +61,6 @@ namespace PlayLogger
             {
                 MainViewModel.LogException(ex);
             }
-
         }
 
         private static async Task<Squirrel.UpdateManager> getUpdateManager()
@@ -78,9 +79,9 @@ namespace PlayLogger
 
             if (1 == Interlocked.Exchange(ref _isUpdateManagerDisposed, 0))
             {
-                if (UpdateManager != null)
+                if (s_UpdateManager != null)
                 {
-                    UpdateManager.Dispose();
+                    s_UpdateManager.Dispose();
                 }
             }
         }
@@ -94,18 +95,20 @@ namespace PlayLogger
             var goTime = _lastUpdateCheckDateTime + TimeSpan.FromMilliseconds(2000);
             var timeToWait = goTime - DateTime.Now;
             if (timeToWait > TimeSpan.Zero)
-                Thread.Sleep(timeToWait);
+            {
+                Task.Delay(timeToWait).Wait();
+            }
         }
         private static DateTime _lastUpdateCheckDateTime = DateTime.Now - TimeSpan.FromDays(1);
-        private static UpdateManager UpdateManager;
+        private static UpdateManager s_UpdateManager;
 
         private static async Task<UpdateInfo> CheckForUpdate(bool ignoreDeltaUpdates)
         {
             _lastUpdateCheckDateTime = DateTime.Now;
-            return await UpdateManager.CheckForUpdate(ignoreDeltaUpdates);
+            return await s_UpdateManager.CheckForUpdate(ignoreDeltaUpdates);
         }
 
-        
+
         public static event Action<int> VersionUpdateProgressChanged;
         public static void OnVersionUpdateProgressChanged(int progress)
         {
