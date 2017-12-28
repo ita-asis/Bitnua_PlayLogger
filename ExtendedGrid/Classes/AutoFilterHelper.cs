@@ -851,7 +851,7 @@ namespace ExtendedGrid.Classes
                     int lastIndex = actaulFilter.IndexOf(")", StringComparison.Ordinal);
                     actaulFilter = actaulFilter.Substring(0, lastIndex);
                     string relalValue = "[" + columnName + "]" + " " + " IN " + "(" + actaulFilter + ")";
-                    if (newFilter.Contains("("  + relalValue +  ")"))
+                    if (newFilter.Contains("(" + relalValue + ")"))
                     {
                         newFilter = newFilter.Replace("(" + relalValue + ")", "");
                         if (newFilter.IndexOf("( AND (", StringComparison.Ordinal) == 0)
@@ -1728,7 +1728,17 @@ namespace ExtendedGrid.Classes
 
             CurrentGrid.Items.Refresh();
 
+            if (CurrentGrid.Items.Count == 0 && EnumerableExtensions.Any(CurrentGrid.ItemsSource))
+            {
+                RemoveAllFilters();
+            }
         }
+
+        public void RemoveAllFilters()
+        {
+            FilterExpression = null;
+        }
+
         // ** implementation
         bool FilterPredicate(object obj)
         {
@@ -1907,5 +1917,33 @@ namespace ExtendedGrid.Classes
         }
 
         #endregion
+    }
+}
+
+static class EnumerableExtensions
+{
+    public static int Count(this IEnumerable source)
+    {
+        int res = 0;
+
+        foreach (var item in source)
+            res++;
+
+        return res;
+    }
+
+    public static bool Any(IEnumerable source)
+    {
+        bool res = false;
+        if (source != null)
+        {
+            foreach (var item in source)
+            {
+                res = true;
+                break;
+            }
+        }
+
+        return res;
     }
 }

@@ -69,10 +69,10 @@ namespace PlayLogger
                                 history.Add(song);
                             }
                         }
-
+                        
+                        history.ReadExtraFieldsFromDb();
                     }
 
-                    history.ReadExtraFieldsFromDb();
                 }
                 catch (MySqlException ex)
                 {
