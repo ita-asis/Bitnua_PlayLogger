@@ -1729,7 +1729,7 @@ namespace ExtendedGrid.Styles
                 {
                     if (items.IsSelectAll == "(Select All)")
                         continue;
-                    items.Hide = !Convert.ToString(items.Name).ToLower().StartsWith(textBox.Text.ToLower());
+                    items.Hide = !Convert.ToString(items.Name).ToLower().Contains(textBox.Text.ToLower());
                 }
             }
         }

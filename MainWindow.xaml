@@ -52,7 +52,7 @@
                             VerticalAlignment="Bottom"
                             Click="UpdateButton_Click">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center">עדכן היסטוריית ניגון</TextBlock>
+                            <TextBlock VerticalAlignment="Center">עדכן</TextBlock>
                             <Image Margin="5,0,0,0"
                                    Source="pack://application:,,,/Resources/icons8-available-updates-80.png"
                                    Height="25" />
@@ -216,29 +216,34 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <TextBlock Width="50"
-                       HorizontalAlignment="Left"
-                       TextAlignment="Center"
-                       Height="15">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Text"
-                                Value="Offline" />
-                        <Setter Property="Background"
-                                Value="Red" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsDbConnectionOn ,UpdateSourceTrigger=PropertyChanged}"
-                                         Value="True">
-                                <Setter Property="Background"
-                                        Value="Green" />
-                                <Setter Property="Text"
-                                        Value="Online" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
-
+            <StackPanel HorizontalAlignment="Left"
+                        Orientation="Horizontal">
+                <TextBlock Width="50"
+                           TextAlignment="Center"
+                           Height="15">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text"
+                                    Value="Offline" />
+                            <Setter Property="Background"
+                                    Value="Red" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsDbConnectionOn ,UpdateSourceTrigger=PropertyChanged}"
+                                             Value="True">
+                                    <Setter Property="Background"
+                                            Value="Green" />
+                                    <Setter Property="Text"
+                                            Value="Online" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Margin="4,0">
+                <Run Text="עודכן לאחרונה ב: " />
+                <Run Text="{Binding LastUpdateDate,StringFormat='dd-MM-yyyy HH:mm:ss'}" />
+                </TextBlock>
+            </StackPanel>
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         FlowDirection="LeftToRight"
@@ -247,7 +252,7 @@
                 <TextBlock x:Name="VersionTB"
                            Margin="0,0,5,0"
                            Text="Version ..." />
-                
+
                 <TextBlock Text="{Binding UpdateVersionText}" />
             </StackPanel>
         </Grid>

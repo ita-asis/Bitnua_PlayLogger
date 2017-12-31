@@ -125,7 +125,15 @@ namespace ExtendedGrid.Classes
                         string data = null;
                         if (rowData.GetType() == typeof(ExpandoObject))
                         {
-                            data = Convert.ToString(Dynamic.InvokeGet(rowData, columnName));
+                            object val = Dynamic.InvokeGet(rowData, columnName);
+                            if (val != null && val.GetType() == typeof(DateTime))
+                            {
+                                data = ((DateTime)val).ToShortDateString();
+                            }
+                            else
+                            {
+                                data = Convert.ToString(val);
+                            }
                         }
                         else
                         {
@@ -1762,7 +1770,17 @@ namespace ExtendedGrid.Classes
                 foreach (var propname in Dynamic.GetMemberNames(obj))
                 {
                     object val = Dynamic.InvokeGet(obj, propname);
-                    row[propname] = val ?? string.Empty;
+                    object data;
+                    if (val != null && val.GetType() == typeof(DateTime))
+                    {
+                        data = ((DateTime)val).ToShortDateString();
+                    }
+                    else
+                    {
+                        data = val ?? string.Empty;
+                    }
+
+                    row[propname] = data;
                 }
             }
             else

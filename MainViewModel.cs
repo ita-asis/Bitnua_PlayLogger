@@ -25,6 +25,8 @@ namespace PlayLogger
     public class MainViewModel : ViewModelBase
     {
         private Timer m_UpdateTimer;
+        private Timer m_CheckConnectionTimer;
+
         private MainViewModel()
         {
             listenToAppUpdate();
@@ -34,7 +36,7 @@ namespace PlayLogger
 
             Settings.PropertyChanged += restartMonitor;
             StartMonitoringXmlDir();
-            startUpdateTimer();
+            startTimers();
 
         }
 
@@ -77,6 +79,30 @@ namespace PlayLogger
                 m_UpdateVersionText = value;
                 OnPropertyChanged(() => UpdateVersionText);
             }
+        }
+
+        private DateTime m_LastUpdateDate;
+        public DateTime LastUpdateDate
+        {
+            get { return m_LastUpdateDate; }
+            set
+            {
+                m_LastUpdateDate = value;
+                OnPropertyChanged(() => LastUpdateDate);
+            }
+        }
+
+        private void startTimers()
+        {
+            startUpdateTimer();
+            startConnectionCheckTimer();
+        }
+
+        private void startConnectionCheckTimer()
+        {
+            m_CheckConnectionTimer = new Timer(new TimeSpan(0, 1, 0).TotalMilliseconds);
+            m_CheckConnectionTimer.Elapsed += (object sender, ElapsedEventArgs e) => checkDbConn();
+            m_CheckConnectionTimer.Start();
         }
 
         private void startUpdateTimer()
@@ -168,17 +194,34 @@ namespace PlayLogger
             OnPropertyChanged(() => ColumnInfo);
         }
 
+
+        private bool m_IsDbConnectionOn;
         public bool IsDbConnectionOn
         {
             get
             {
-                bool res = false;
+                return m_IsDbConnectionOn;
+            }
+            private set
+            {
+                m_IsDbConnectionOn = value;
+                OnPropertyChanged(() => IsDbConnectionOn);
+            }
+        }
+
+        private async Task<bool> checkDbConn()
+        {
+            bool res = false;
+            await Task.Run(() =>
+            {
                 using (var con = MyDbConnectionBase.CreateInstace())
                 {
                     res = con.IsConnect();
                 }
-                return res;
-            }
+            });
+
+            IsDbConnectionOn = res;
+            return res;
         }
 
 
@@ -214,18 +257,21 @@ namespace PlayLogger
 
             Debug.WriteLine("running Update...");
             IsLoading = true;
-            OnPropertyChanged(() => IsDbConnectionOn);
-
-            await Task.Run(() =>
+            bool isDbConOpen = await checkDbConn();
+            if (isDbConOpen)
             {
-                lock (m_LockObj)
+                await Task.Run(() =>
                 {
-                    DbHandler.LogSongInfo(args);
-                    loadData();
-                    Debug.WriteLine("running Update complete");
-                }
-                IsLoading = false;
-            });
+                    lock (m_LockObj)
+                    {
+                        DbHandler.LogSongInfo(args);
+                        loadData();
+                        Debug.WriteLine("running Update complete");
+                        LastUpdateDate = DateTime.Now;
+                    }
+                });
+            }
+            IsLoading = false;
 
         }
 

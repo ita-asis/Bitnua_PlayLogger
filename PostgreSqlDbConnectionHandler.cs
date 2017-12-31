@@ -49,8 +49,10 @@ namespace PlayLogger
                     {
                         string connstring = string.Format("Server={0};Port={1};Database={2};User Id={3};Password={4}; SSL Mode=Prefer; Trust Server Certificate=true;", ServerAddress, ServerPort, DatabaseName, UserName, Password);
                         connection = new NpgsqlConnection(connstring);
-                        
+
                         connection.Open();
+                        DbCommand test = CreateCmd("select 1");
+                        test.ExecuteScalar();
                         result = true;
                     }
                 }
