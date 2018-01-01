@@ -31,6 +31,33 @@ namespace ExtendedGrid.Styles
 {
     public partial class DataGridGeneric
     {
+        public DataGridGeneric()
+        {
+            registerWindowLostFocus();
+
+        }
+
+        private void registerWindowLostFocus()
+        {
+            Window window = Application.Current.Windows.OfType<Window>().SingleOrDefault();
+            if (window != null)
+            {
+                window.Deactivated += (o, e) => { closeAllPopups(); };
+            }
+        }
+
+        private void closeAllPopups()
+        {
+            foreach (Popup pop in m_OpenPopups.ToList())
+            {
+                closePopup(pop);
+            }
+        }
+
+        private void window_Deactivated(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
         private void AutoFilterMouseDown(object sender, MouseButtonEventArgs e)
         {
 
@@ -53,13 +80,14 @@ namespace ExtendedGrid.Styles
                 }
                 var popup = FindControls.FindChild<Popup>(column, "popupDrag");
                 if (popup == null) return;
-                popup.IsOpen = true;
+                openPopup(popup);
                 //Change the position of popup with the mouse
                 var popupSize = new Size(popup.ActualWidth, popup.ActualHeight);
                 var position = new Point { X = column.ActualWidth - 19, Y = column.ActualHeight };
                 popup.PlacementRectangle = new Rect(position, popupSize);
+                var txtbox = FindControls.FindChild<TextBox>(popup.Child, "txtSearchAutoFilter");
+                txtbox.Focus();
                 var listbox = FindControls.FindChild<ListBox>(popup.Child, "autoFilterList");
-                listbox.Focus();
                 //listbox.LostFocus += PopLostFocus; Removed this becuase event was suscribing again and again on each mouse down
                 var clearButton = FindControls.FindChild<Button>(popup.Child, "btnClear");
                 //Get the text search textbox and empty it
@@ -161,7 +189,7 @@ namespace ExtendedGrid.Styles
                 var currentFocueedElement = FocusManager.GetFocusedElement(popup);
                 if (currentFocueedElement == null)
                 {
-                    popup.IsOpen = false;
+                    closePopup(popup);
                 }
             }
             catch
@@ -176,14 +204,19 @@ namespace ExtendedGrid.Styles
 
         private void PopLostFocus(object sender, RoutedEventArgs e)
         {
-            var stackPanel = sender as StackPanel == null ? FindControls.FindParent<StackPanel>((FrameworkElement)sender) : (StackPanel)sender;
-            if (stackPanel == null) return;
-            var popup = (Popup)stackPanel.Parent;
+            var popup = sender as Popup;
+            if (popup == null)
+            {
+                var stackPanel = sender as StackPanel == null ? FindControls.FindParent<StackPanel>((FrameworkElement)sender) : (StackPanel)sender;
+                if (stackPanel == null) return;
+                popup = (Popup)stackPanel.Parent;
+            }
+
             if (popup == null) return;
             if (popup.IsMouseOver) return;
             var currentFocueedElement = FocusManager.GetFocusedElement(popup);
             if (currentFocueedElement == null)
-                popup.IsOpen = false;
+                closePopup(popup);
         }
 
         private bool _isLoading;
@@ -490,7 +523,11 @@ namespace ExtendedGrid.Styles
                     mainGrid.AutoFilterHelper.RemoveAllFilter(mainGrid, mainGrid.AutoFilterHelper.CurrentColumName);
                     var sp = FindControls.FindParent<StackPanel>(mainGrid.AutoFilterHelper.CurrentListBox);
                     var popup = sp.Parent as Popup;
-                    if (popup != null) popup.Tag = "False";
+                    if (popup != null)
+                    {
+                        popup.Tag = "False";
+                        closePopup(popup);
+                    }
                 }
             }
             finally
@@ -967,8 +1004,7 @@ namespace ExtendedGrid.Styles
                     grid.IsReadOnly = true;
                     grid.Cursor = Cursors.ScrollNS;
                     //make sure the popup is visible
-
-                    popupDrag.IsOpen = true;
+                    openPopup(popupDrag);
                 }
                 //Change the position of popup with the mouse
                 var popupSize = new Size(popupDrag.ActualWidth, popupDrag.ActualHeight);
@@ -1098,7 +1134,9 @@ namespace ExtendedGrid.Styles
             var popupDrag = FindControls.FindChild<Popup>(grid, "popupDrag");
             IsDragging = false;
             if (popupDrag != null)
-                popupDrag.IsOpen = false;
+            {
+                closePopup(popupDrag);
+            }
             grid.IsReadOnly = false;
             grid.DraggedItem = null;
 
@@ -1146,7 +1184,7 @@ namespace ExtendedGrid.Styles
             if (popup.IsMouseOver) return;
             var currentFocueedElement = FocusManager.GetFocusedElement(popup);
             if (currentFocueedElement == null)
-                popup.IsOpen = false;
+                closePopup(popup);
         }
 
         private void SigmaMouseDown(object sender, MouseButtonEventArgs e)
@@ -1162,7 +1200,7 @@ namespace ExtendedGrid.Styles
             var popup = FindControls.FindChild<Popup>(column, "sigmaDrag");
 
             if (popup == null) return;
-            popup.IsOpen = true;
+            openPopup(popup);
             //Change the position of popup with the mouse
             var popupSize = new Size(popup.ActualWidth, popup.ActualHeight);
             var position = new Point { X = column.ActualWidth - 19, Y = column.ActualHeight };
@@ -1216,6 +1254,26 @@ namespace ExtendedGrid.Styles
                 listbox.UpdateLayout();
                 listbox.Items.Refresh();
             }
+        }
+
+
+        private HashSet<Popup> m_OpenPopups = new HashSet<Popup>();
+        private void openPopup(Popup popup)
+        {
+            if (!m_OpenPopups.Contains(popup))
+            {
+                m_OpenPopups.Add(popup);
+            }
+            popup.IsOpen = true;
+        }
+
+        private void closePopup(Popup popup)
+        {
+            if (m_OpenPopups.Contains(popup))
+            {
+                m_OpenPopups.Remove(popup);
+            }
+            popup.IsOpen = false;
         }
 
         private bool IsSummariesChecked(string columnName, int computation)
