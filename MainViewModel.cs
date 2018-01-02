@@ -22,6 +22,18 @@ using System.Windows.Threading;
 
 namespace PlayLogger
 {
+    public static class TimerExtenstion
+    {
+        public static void Reset(this Timer timer)
+        {
+            if (timer != null)
+            {
+                timer.Stop();
+                timer.Start();
+            }
+        }
+    }
+
     public class MainViewModel : ViewModelBase
     {
         private Timer m_UpdateTimer;
@@ -268,13 +280,12 @@ namespace PlayLogger
                         loadData();
                         Debug.WriteLine("running Update complete");
                         LastUpdateDate = DateTime.Now;
+                        m_UpdateTimer.Reset();
                     }
                 });
             }
             IsLoading = false;
-
         }
-
 
         private bool m_IsMonitoringXmlDir;
         public bool IsMonitoringXmlDir
