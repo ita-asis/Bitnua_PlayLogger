@@ -25,7 +25,11 @@ namespace PlayLogger
         public string PlayLocation
         {
             get { return Convert.ToString(UserSettings.Get("PlayLocation")); }
-            set { UserSettings.Set("PlayLocation", value); }
+            set
+            {
+                UserSettings.Set("PlayLocation", value);
+                OnPropertyChanged(() => PlayLocation);
+            }
         }
 
         public bool IsSettingEditable
@@ -37,19 +41,31 @@ namespace PlayLogger
 
                 return confVal || value || string.IsNullOrWhiteSpace(LastPlayedXmlDir) || string.IsNullOrWhiteSpace(PlayLocation);
             }
-            set { UserSettings.Set("IsSettingEditable", value); }
+            set
+            {
+                UserSettings.Set("IsSettingEditable", value);
+                OnPropertyChanged(() => IsSettingEditable);
+            }
         }
 
         public bool CanDeleteSongs
         {
             get { return Convert.ToBoolean(UserSettings.Get("CanDeleteSongs")); }
-            set { UserSettings.Set("CanDeleteSongs", value); }
+            set
+            {
+                UserSettings.Set("CanDeleteSongs", value);
+                OnPropertyChanged(() => CanDeleteSongs);
+            }
         }
 
         public double ViewScale
         {
             get { return Convert.ToDouble(UserSettings.Get("ViewScale")); }
-            set { UserSettings.Set("ViewScale", value); }
+            set
+            {
+                UserSettings.Set("ViewScale", value);
+                OnPropertyChanged(() => ViewScale);
+            }
         }
     }
 }
