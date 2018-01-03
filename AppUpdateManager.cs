@@ -65,11 +65,7 @@ namespace PlayLogger
 
         private static async Task<Squirrel.UpdateManager> getUpdateManager()
         {
-#if DEBUG
-            return await Task.Run<UpdateManager>(() => new UpdateManager(@"C:\Users\iasis\Documents\Visual Studio 2013\Projects\PlayLogger\Releases"));
-#else
             return await UpdateManager.GitHubUpdateManager("https://github.com/ita-asis/Bitnua_PlayLogger");
-#endif
         }
 
         private static int _isUpdateManagerDisposed = 1;

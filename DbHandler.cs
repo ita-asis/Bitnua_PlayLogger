@@ -5,7 +5,9 @@ using System.Configuration;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PlayLogger
 {
@@ -69,7 +71,7 @@ namespace PlayLogger
                                 history.Add(song);
                             }
                         }
-                        
+
                         history.ReadExtraFieldsFromDb();
                     }
 
@@ -174,7 +176,7 @@ namespace PlayLogger
                                         cmdFields.Parameters.Clear();
                                         cmdFields.Parameters.Add(dbCon.CreateParam("@rcdId", song.RecordId));
                                         cmdFields.Parameters.Add(dbCon.CreateParam("@fName", item.Key));
-                                        cmdFields.Parameters.Add(dbCon.CreateParam("@fValue", item.Value));
+                                        cmdFields.Parameters.Add(dbCon.CreateParam("@fValue", item.Value ?? string.Empty));
                                         cmdFields.ExecuteNonQuery();
                                     }
                                 }
@@ -280,6 +282,43 @@ namespace PlayLogger
                             cmdDel.CommandText = string.Format("Delete FROM playhistory WHERE RecordId in ({0}); Delete FROM FieldData WHERE RecordId in ({0});", ids);
                             cmdDel.ExecuteNonQuery();
                         }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MainViewModel.LogException(ex);
+            }
+        }
+
+        public static async Task LogAppInfoAsync(PlayHistorySettings i_Settings)
+        {
+            await Task.Run(() => LogAppInfo(i_Settings));
+        }
+
+        public static void LogAppInfo(PlayHistorySettings i_Settings)
+        {
+            try
+            {
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                string version = assembly.GetName().Version.ToString();
+
+                using (var dbCon = MyDbConnectionBase.CreateInstace())
+                {
+                    if (!dbCon.IsConnect())
+                    {
+                        return;
+                    }
+                    using (var cmd = dbCon.CreateCmd())
+                    {
+                        // CREATE TABLE clientInfo (PlayLoc TEXT,Version TEXT,LastRunDate TIMESTAMP);
+                        // ALTER TABLE clientInfo ADD CONSTRAINT clietInfo_key UNIQUE (PlayLoc, Version);
+
+                        cmd.CommandText = string.Format("Delete From clientInfo WHERE DATE_PART('day',Now() - LastRunDate) >= 7 Or (PlayLoc = @playLoc and Version = @version); Insert into clientInfo (PlayLoc,Version,LastRunDate) VALUES(@playLoc,@version,@runDate);");
+                        cmd.Parameters.Add(dbCon.CreateParam("@playLoc", i_Settings.PlayLocation));
+                        cmd.Parameters.Add(dbCon.CreateParam("@version", version));
+                        cmd.Parameters.Add(dbCon.CreateParam("@runDate", DateTime.Now));
+                        cmd.ExecuteNonQuery();
                     }
                 }
             }

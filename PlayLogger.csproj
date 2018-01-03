@@ -73,6 +73,9 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>appKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\icons8-tango-80 blue_131594520708001134.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DeltaCompressionDotNet, Version=1.1.0.0, Culture=neutral, PublicKeyToken=1d14d6e5194e7f4a, processorArchitecture=MSIL">
       <HintPath>packages\DeltaCompressionDotNet.1.1.0\lib\net20\DeltaCompressionDotNet.dll</HintPath>
@@ -388,6 +391,9 @@
       <Project>{ef568126-a1d2-49cf-a2c1-1edb8dfc3e40}</Project>
       <Name>ExtendedGrid</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icons8-tango-80 blue_131594520708001134.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\StrongNamer.0.0.6\build\StrongNamer.targets" Condition="Exists('packages\StrongNamer.0.0.6\build\StrongNamer.targets')" />

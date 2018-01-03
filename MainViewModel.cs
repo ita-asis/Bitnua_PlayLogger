@@ -49,7 +49,7 @@ namespace PlayLogger
             Settings.PropertyChanged += restartMonitor;
             StartMonitoringXmlDir();
             startTimers();
-
+            DbHandler.LogAppInfoAsync(Settings);
         }
 
         private void listenToAppUpdate()
@@ -260,7 +260,7 @@ namespace PlayLogger
             }
         }
         private object m_LockObj = new object();
-        public async void Update(PlayHistorySettings args = null)
+        public async Task Update(PlayHistorySettings args = null)
         {
             if (args == null)
             {
@@ -364,8 +364,8 @@ namespace PlayLogger
             var ex = exception;
             while (ex != null)
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
+                Trace.WriteLine(ex.Message);
+                Trace.WriteLine(ex.StackTrace);
                 ex = ex.InnerException;
             }
         }
