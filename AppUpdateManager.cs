@@ -16,9 +16,8 @@ namespace PlayLogger
         private AppUpdateManager()
         {
             AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => DisposeUpdateManager();
-#pragma warning disable 4014
-            checkForUpdates();
-#pragma warning restore 4014
+
+            var t = checkForUpdates();
         }
 
         public static AppUpdateManager Instance
