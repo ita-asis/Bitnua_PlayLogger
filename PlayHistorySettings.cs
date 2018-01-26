@@ -67,5 +67,15 @@ namespace PlayLogger
                 OnPropertyChanged(() => ViewScale);
             }
         }
+
+        public string LogoImgUrl
+        {
+            get { return Convert.ToString(UserSettings.Get("LogoUrl")); }
+            set
+            {
+                UserSettings.Set("LogoUrl", value);
+                OnPropertyChanged(() => LogoImgUrl);
+            }
+        }
     }
 }

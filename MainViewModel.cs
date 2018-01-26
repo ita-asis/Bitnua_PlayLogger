@@ -44,12 +44,12 @@ namespace PlayLogger
             listenToAppUpdate();
             setSongs(null);
             Settings = new PlayHistorySettings();
-            Update();
+            var updateTask = Update();
 
             Settings.PropertyChanged += restartMonitor;
             StartMonitoringXmlDir();
             startTimers();
-            DbHandler.LogAppInfoAsync(Settings);
+            var logTask = DbHandler.LogAppInfoAsync(Settings);
         }
 
         private void listenToAppUpdate()
@@ -472,6 +472,7 @@ namespace PlayLogger
                 m_FilterInfo = Filter;
             }
         }
+
 
     }
 }

@@ -33,105 +33,107 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <Grid Margin="4,4,4,10"
+              MaxHeight="115">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <StackPanel Margin="4,4,4,10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <StackPanel Orientation="Horizontal"
-                            Grid.Column="0">
-                    <Button Padding="5"
-                            Margin="4"
-                            VerticalAlignment="Bottom"
-                            Click="UpdateButton_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center">עדכן</TextBlock>
-                            <Image Margin="5,0,0,0"
-                                   Source="pack://application:,,,/Resources/icons8-available-updates-80.png"
-                                   Height="25" />
-                        </StackPanel>
-                    </Button>
-
-
-
-                    <Button Padding="5"
-                            Margin="4"
-                            Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
-                            HorizontalAlignment="Left"
-                            Click="showSettingsPage_Click"
-                            ToolTip="הגדרות">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center">הגדרות</TextBlock>
-
-                            <Image Margin="5,0,0,0"
-                                   Source="pack://application:,,,/Resources/icons8-automation-50.png"
-                                   Height="25" />
-                        </StackPanel>
-                    </Button>
-                    <StackPanel Margin="4"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Left"
-                                Background="#FFD4EAFD">
-
-                        <TextBlock Text="גודל תצוגה"
-                                   VerticalAlignment="Center"
-                                   Padding="5" />
-                        <Slider Grid.Row="1"
-                                VerticalAlignment="Center"
-                                Margin="10,0"
-                                Name="_zoom"
-                                Minimum="1"
-                                Maximum="3"
-                                Value="{Binding Settings.ViewScale}"
-                                SmallChange="0.1"
-                                Width="100" />
+            <StackPanel Orientation="Horizontal"
+                        Grid.Column="0">
+                <Button Padding="5"
+                        Margin="4"
+                        VerticalAlignment="Bottom"
+                        Click="UpdateButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center">עדכן</TextBlock>
+                        <Image Margin="5,0,0,0"
+                               Source="pack://application:,,,/Resources/icons8-available-updates-80.png"
+                               Height="25" />
                     </StackPanel>
-                </StackPanel>
+                </Button>
 
-                <StackPanel Grid.Row="1"
+
+
+                <Button Padding="5"
+                        Margin="4"
+                        Visibility="{Binding Settings.IsSettingEditable,Converter={StaticResource BoolToVis}}"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Click="showSettingsPage_Click"
+                        ToolTip="הגדרות">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center">הגדרות</TextBlock>
+
+                        <Image Margin="5,0,0,0"
+                               Source="pack://application:,,,/Resources/icons8-automation-50.png"
+                               Height="25" />
+                    </StackPanel>
+                </Button>
+                <StackPanel Margin="4"
                             Orientation="Horizontal"
-                            Margin="2">
+                            HorizontalAlignment="Left"
+                            Background="#FFD4EAFD">
 
-                    <TextBlock Text="רחבת הרקדה"
-                               HorizontalAlignment="Center"
-                               Padding="3" />
-                    <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                               Width="120"
-                               Padding="3" />
+                    <TextBlock Text="גודל תצוגה"
+                               VerticalAlignment="Center"
+                               Padding="5" />
+                    <Slider Grid.Row="1"
+                            VerticalAlignment="Center"
+                            Margin="10,0"
+                            Name="_zoom"
+                            Minimum="1"
+                            Maximum="3"
+                            Value="{Binding Settings.ViewScale}"
+                            SmallChange="0.1"
+                            Width="100" />
                 </StackPanel>
-            </Grid>
+            </StackPanel>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid>
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        Margin="2">
 
-                    <TextBlock Text="ריקודים שרקדו ברחבות"
-                               FontSize="18"
-                               TextAlignment="Center"
-                               Background="#FFCAFDED" />
-                    <Button x:Name="exportXlsBtn"
-                            Click="exportXlsBtn_Click"
-                            HorizontalAlignment="Right"
-                            Margin="2"
-                            ToolTip="יצא לאקסל">
-                        <Image Source="pack://application:,,,/Resources/if_export_excel_64174.png"
-                               Width="20" />
-                    </Button>
-                </Grid>
+                <TextBlock Text="רחבת הרקדה"
+                           HorizontalAlignment="Center"
+                           Padding="3" />
+                <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                           Width="120"
+                           Padding="3" />
+            </StackPanel>
+
+            <Image Grid.RowSpan="2"
+                   Grid.Column="1"
+                   Margin="0,0,0,5"
+                   MaxHeight="80"
+                   Stretch="Uniform"
+                   StretchDirection="DownOnly"
+                   HorizontalAlignment="Left"
+                   Source="{Binding Settings.LogoImgUrl}" />
+
+            <Grid Grid.Row="2"
+                  Grid.ColumnSpan="2">
+
+                <TextBlock Text="ריקודים שרקדו ברחבות"
+                           FontSize="18"
+                           TextAlignment="Center"
+                           Background="#FFCAFDED" />
+                <Button x:Name="exportXlsBtn"
+                        Click="exportXlsBtn_Click"
+                        HorizontalAlignment="Left"
+                        Margin="2"
+                        ToolTip="יצא לאקסל">
+                    <Image Source="pack://application:,,,/Resources/if_export_excel_64174.png"
+                           Width="20" />
+                </Button>
             </Grid>
-        </StackPanel>
+        </Grid>
 
         <Rectangle Name="sizingElement"
                    Grid.Row="1"
@@ -139,9 +141,7 @@
                    Margin="4" />
 
         <Grid Grid.Row="1">
-
-
-            <Grid Grid.Row="1"
+            <Grid 
                   Panel.ZIndex="1"
                   Visibility="{Binding IsLoading,Converter={StaticResource BoolToVis}}">
                 <Grid Panel.ZIndex="1"
@@ -153,15 +153,14 @@
                        Panel.ZIndex="2"
                        gif:ImageBehavior.AnimatedSource="pack://application:,,,/Resources/Spinner.gif" />
             </Grid>
-            <ScrollViewer Grid.Row="1"
+            <ScrollViewer 
                           VerticalScrollBarVisibility="Disabled"
                           HorizontalScrollBarVisibility="Visible">
-                <Grid Grid.Row="1">
+                <Grid >
                     <Grid.LayoutTransform>
                         <ScaleTransform ScaleX="{Binding Path=Value, ElementName=_zoom}"
                                         ScaleY="{Binding Path=Value, ElementName=_zoom}" />
                     </Grid.LayoutTransform>
-
                     <ex:ExtendedDataGrid x:Name="songInfoDataGrid"
                                          MaxHeight="{Binding ElementName=sizingElement,Path=ActualHeight, FallbackValue=1}"
                                          HorizontalAlignment="Left"
@@ -187,25 +186,6 @@
                             <local:ExtendedDataGrid_PreserveColumnInfo ColumnInfo="{Binding ColumnInfo}"
                                                                        Filter="{Binding Filter}" />
                         </i:Interaction.Behaviors>
-                        <!--<DataGrid.Columns>
-                        <DataGridTextColumn x:Name="idColumn"
-                                            Width="Auto"
-                                            Header="Id"
-                                            Binding="{Binding Id}" />
-
-                        <DataGridTextColumn x:Name="titleColumn"
-                                            Width="Auto"
-                                            Header="Title"
-                                            Binding="{Binding Title}" />
-                        <DataGridTextColumn x:Name="playTimeColumn"
-                                            Width="Auto"
-                                            Header="LastPlayed"
-                                            Binding="{Binding PlayTime}" />
-                        <DataGridTextColumn x:Name="playLocationColumn"
-                                            Width="Auto"
-                                            Header="LastPlayed"
-                                            Binding="{Binding PlayLocation}" />
-                    </DataGrid.Columns>-->
                     </ex:ExtendedDataGrid>
                 </Grid>
             </ScrollViewer>
@@ -255,14 +235,6 @@
 
                 <TextBlock Text="{Binding UpdateVersionText}" />
             </StackPanel>
-        </Grid>
-
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
         </Grid>
     </Grid>
 </Window>
