@@ -56,10 +56,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>A1B2FE949A3FCB5EAF8E2C84C516085BAA364B91</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>21A6F19DA3A3A989157C455159C8B7285970AC3F</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>PlayLogger_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>PlayLogger_1_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -230,6 +230,7 @@
     </EmbeddedResource>
     <None Include="appKey.snk" />
     <None Include="packages.config" />
+    <None Include="PlayLogger_1_TemporaryKey.pfx" />
     <None Include="PlayLogger_TemporaryKey.pfx" />
     <None Include="Properties\DataSources\DbHandler.datasource" />
     <None Include="Properties\DataSources\SongInfo.datasource" />
