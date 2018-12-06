@@ -68,6 +68,9 @@ namespace PlayLogger
                                     PlayLocation = reader.SafeGetString(4)
                                 };
 
+                                if (DbHandler.SongFields.Contains("ID"))
+                                    song.Fields["ID"] = song.Id.ToString();
+
                                 history.Add(song);
                             }
                         }
