@@ -44,6 +44,8 @@ namespace PlayLogger
             listenToAppUpdate();
             setSongs(null);
             Settings = new PlayHistorySettings();
+            DbHandler.RemoveOldSongs();
+
             var updateTask = Update();
 
             Settings.PropertyChanged += restartMonitor;

@@ -13,13 +13,18 @@ namespace PlayLogger
 {
     public static class DbHandler
     {
+        private static HashSet<string> s_fields;
         public static HashSet<String> SongFields
         {
             get
             {
-                string csvFields = Config.Instance.Get("SongFieldsToSave");
+                if (s_fields == null)
+                {
+                    string csvFields = Config.Instance.Get("SongFieldsToSave");
+                    s_fields = new HashSet<string>(csvFields.Split(','));
+                }
 
-                return new HashSet<string>(csvFields.Split(','));
+                return s_fields;
             }
         }
 
@@ -128,7 +133,7 @@ namespace PlayLogger
                                 string fieldName = fData.Item1;
                                 string value = fData.Item2;
 
-                                if (SongFields.Contains(fieldName))
+                                if (!fieldName.Equals("ID",StringComparison.OrdinalIgnoreCase) && SongFields.Contains(fieldName))
                                 {
                                     song.Fields[fieldName] = value;
                                 }
@@ -321,6 +326,34 @@ namespace PlayLogger
                         cmd.Parameters.Add(dbCon.CreateParam("@playLoc", i_Settings.PlayLocation));
                         cmd.Parameters.Add(dbCon.CreateParam("@version", version));
                         cmd.Parameters.Add(dbCon.CreateParam("@runDate", DateTime.Now));
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MainViewModel.LogException(ex);
+            }
+        }
+
+        public static void RemoveOldSongs()
+        {
+            try
+            {
+                using (var dbCon = MyDbConnectionBase.CreateInstace())
+                {
+                    if (!dbCon.IsConnect())
+                    {
+                        return;
+                    }
+                    using (var cmd = dbCon.CreateCmd())
+                    {
+                        // CREATE TABLE clientInfo (PlayLoc TEXT,Version TEXT,LastRunDate TIMESTAMP);
+                        // ALTER TABLE clientInfo ADD CONSTRAINT clietInfo_key UNIQUE (PlayLoc, Version);
+                        var days = 14;
+                        cmd.CommandText = $@"Delete From fielddata A USING playhistory B WHERE B.recordid = A.recordid AND DATE_PART('day',Now() - B.lastPlayTime) > {days};";
+                        cmd.ExecuteNonQuery();
+                        cmd.CommandText = $"Delete From playhistory WHERE DATE_PART('day',Now() - lastPlayTime) > {days};";
                         cmd.ExecuteNonQuery();
                     }
                 }
