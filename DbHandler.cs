@@ -350,7 +350,7 @@ namespace PlayLogger
                     {
                         // CREATE TABLE clientInfo (PlayLoc TEXT,Version TEXT,LastRunDate TIMESTAMP);
                         // ALTER TABLE clientInfo ADD CONSTRAINT clietInfo_key UNIQUE (PlayLoc, Version);
-                        var days = 14;
+                        const int days = 7;
                         cmd.CommandText = $@"Delete From fielddata A USING playhistory B WHERE B.recordid = A.recordid AND DATE_PART('day',Now() - B.lastPlayTime) > {days};";
                         cmd.ExecuteNonQuery();
                         cmd.CommandText = $"Delete From playhistory WHERE DATE_PART('day',Now() - lastPlayTime) > {days};";
