@@ -6,7 +6,8 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using ExtendedGrid.Classes;
-
+using ExtendedGrid.ExtendedGridControl;
+using ExtendedGrid.Styles;
 
 namespace ExtendedGrid.Converter
 {
@@ -14,6 +15,7 @@ namespace ExtendedGrid.Converter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            return true;
             Button clearButton = null;
             bool value = false;
             var header = values[0] as DataGridColumnHeader;
@@ -27,7 +29,10 @@ namespace ExtendedGrid.Converter
                     return false;
                 if (header.Column == null)
                     return false;
-                var currentColumnName = RowSummariesHelper.CurrentColumn;
+
+
+                var dg = FindControls.FindParent<ExtendedDataGrid>(header);
+                var currentColumnName = dg.AutoFilterHelper.CurrentColumName;
                 if (currentColumnName == null) return false;
                 if (dt.Columns.Contains(currentColumnName))
                 foreach (DataRow row in dt.Rows)
@@ -54,10 +59,7 @@ namespace ExtendedGrid.Converter
             }
             finally
             {
-                if (value)
-                {
-                }
-                else
+                if (false && !value)
                 {
                     if (clearButton != null)
                     {

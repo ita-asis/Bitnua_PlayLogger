@@ -235,5 +235,35 @@ namespace PlayLogger
             window.ShowDialog();
         }
 
+        private async void updateLastPlayedBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var VM = ((MainViewModel)this.DataContext);
+
+            if (VM.IsLoading || VM.SongsInfo == null)
+                return;
+
+            var places = VM.SongsInfo.Select(s => s.PlayLocation).Distinct().Where(p => p != VM.Settings.PlayLocation);
+            var dialog = new LastPlayedUpdateDialog(places)
+            {
+                Owner = this,
+                FlowDirection = this.FlowDirection,
+                WindowStyle = System.Windows.WindowStyle.ToolWindow,
+                ResizeMode = System.Windows.ResizeMode.NoResize,
+                SizeToContent = System.Windows.SizeToContent.WidthAndHeight,
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+                ShowInTaskbar = false,
+                Title = "עדכון נוגן לאחרונה"
+            };
+            dialog.ShowDialog();
+
+            if (dialog.Places != null && dialog.Places.Count > 0)
+            {
+                var songsToUpdate = VM.SongsInfo.Where(s => dialog.Places.Contains(s.PlayLocation))
+                                                .GroupBy(s => s.Id)
+                                                .Select(g => g.OrderByDescending(s => s.PlayTime).First());
+
+                await VM.UpdateLastPlayedOnAmpsDB(songsToUpdate);
+            }
+        }
     }
 }

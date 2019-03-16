@@ -58,6 +58,16 @@ namespace PlayLogger
             }
         }
 
+        public bool ShowLast24Hours
+        {
+            get { return Convert.ToBoolean(UserSettings.Get(nameof(ShowLast24Hours))); }
+            set
+            {
+                UserSettings.Set(nameof(ShowLast24Hours), value);
+                OnPropertyChanged(nameof(ShowLast24Hours));
+            }
+        }
+
         public double ViewScale
         {
             get { return Convert.ToDouble(UserSettings.Get("ViewScale")); }
@@ -75,6 +85,16 @@ namespace PlayLogger
             {
                 UserSettings.Set("LogoUrl", value);
                 OnPropertyChanged(() => LogoImgUrl);
+            }
+        }
+
+        public string AmpsDB
+        {
+            get { return Convert.ToString(UserSettings.Get(nameof(AmpsDB))); }
+            set
+            {
+                UserSettings.Set(nameof(AmpsDB), value);
+                OnPropertyChanged(nameof(AmpsDB));
             }
         }
     }

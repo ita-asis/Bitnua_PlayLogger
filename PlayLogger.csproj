@@ -167,8 +167,14 @@
     <Compile Include="AppUpdateManager.cs" />
     <Compile Include="eDataBaseTypes.cs" />
     <Compile Include="FileSystemWatcherArgs.cs" />
+    <Compile Include="LastPlayedUpdateDialog.xaml.cs">
+      <DependentUpon>LastPlayedUpdateDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MyDbConnectionBase.cs" />
     <Compile Include="PostgreSqlDbConnectionHandler.cs" />
+    <Compile Include="Wpf\MultiSelectComboBox.xaml.cs">
+      <DependentUpon>MultiSelectComboBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Wpf\RememberWindowSizeAndPositionBehavior.cs" />
     <Compile Include="Properties\WindowLocationSettings.cs" />
     <Compile Include="SettingsPopup.xaml.cs">
@@ -192,6 +198,10 @@
     <Compile Include="Wpf\RelayCommand.cs" />
     <Compile Include="SongInfo.cs" />
     <Compile Include="Wpf\ViewModelBase.cs" />
+    <Page Include="LastPlayedUpdateDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -208,6 +218,10 @@
     <Page Include="SettingsPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Wpf\MultiSelectComboBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

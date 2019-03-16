@@ -72,14 +72,14 @@ namespace ExtendedGrid.Classes
                 foreach (DataRow row in table.Rows)
                 {
                     object value = row[columnName];
-                    var strValue = Convert.ToString(value);
+                    var strValue = Convert.ToString(value).Replace($"'","''");
 
                     if (!valuesHash.Contains(strValue))
                     {
                         CheckedListItem currValue = null;
                         if (!string.IsNullOrEmpty(strValue))
                         {
-                            currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains("'" + value + "'") };
+                            currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains($"'{strValue}'") };
                         }
                         else if (value == null)
                         {
@@ -87,7 +87,7 @@ namespace ExtendedGrid.Classes
                         }
                         else if (string.IsNullOrEmpty(strValue))
                         {
-                            currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains("") };
+                            currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains($"") };
                         }
 
                         valuesHash.Add(strValue);
@@ -160,7 +160,7 @@ namespace ExtendedGrid.Classes
                     CheckedListItem currValue = null;
                     if (!string.IsNullOrEmpty(Convert.ToString(value)))
                     {
-                        currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains("'" + value + "'") || filteredValues.Contains(value) };
+                        currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains($"'{value.Replace($"'","''")}'") || filteredValues.Contains(value) };
                     }
                     else if (value == null)
                     {
@@ -168,7 +168,7 @@ namespace ExtendedGrid.Classes
                     }
                     else if (string.IsNullOrEmpty(Convert.ToString(value)))
                     {
-                        currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains("") };
+                        currValue = new CheckedListItem { Name = value, IsChecked = filteredValues.Contains($"") };
                     }
 
                     yield return currValue;
@@ -214,46 +214,16 @@ namespace ExtendedGrid.Classes
                 {
                     if (string.IsNullOrEmpty(Convert.ToString(value)))
                     {
-                        string dummy = value == null ? null : "";
-                        switch (dummy)
-                        {
-                            case "":
-                                itemSource.RowFilter = "[" + columnName + "]" + " = ''";
-                                break;
-                            case null:
-                                itemSource.RowFilter = "[" + columnName + "]" + " IS Null";
-                                break;
-                        }
+                        var fi = value == null ? "IS Null" : "= ''";
+                        itemSource.RowFilter = $"[{columnName}] {fi}";
+                    }
+                    else if (itemSource.Table.Columns[columnName].DataType.BaseType.ToString() == "System.Enum")
+                    {
+                        var value1 = Convert.ToInt32(Enum.Parse(itemSource.Table.Columns[columnName].DataType, Convert.ToString(value)));
+                        itemSource.RowFilter = $"[{columnName}] IN ({value1})";
                     }
                     else
-                        if (itemSource.Table.Columns[columnName].DataType.BaseType.ToString() == "System.Enum")
-                        {
-                            var value1 = Convert.ToInt32(Enum.Parse(itemSource.Table.Columns[columnName].DataType, Convert.ToString(value)));
-                            itemSource.RowFilter = "[" + columnName + "]" + " " + " IN " + "(" + value1 + ")";
-                        }
-                        else
-                            itemSource.RowFilter = "[" + columnName + "]" + " " + " IN " + "(" + "'" + value + "'" + ")";
-                }
-
-                int count = CurrentDistictValues.Count(c => c.IsChecked);
-                if (count == CurrentDistictValues.Count - 1)
-                {
-                    CurrentDistictValues[0].IsChecked = true;
-                    if (CurrentListBox != null)
-                    {
-                        CurrentListBox.ItemsSource = CurrentDistictValues;
-                        CurrentListBox.UpdateLayout();
-                        CurrentListBox.Items.Refresh();
-                    }
-                }
-
-                if (CurrentListBox != null)
-                {
-                    var clearButton = FindControls.FindChild<Button>(CurrentListBox.Parent, "btnClear");
-                    if (clearButton != null)
-                    {
-                        clearButton.IsEnabled = CurrentDistictValues.Count(c => c.IsChecked) > 0;
-                    }
+                        itemSource.RowFilter = $"[{columnName}] IN ('{value.ToString().Replace($"'", "''")}')";
                 }
             }
             else if (CollectionViewSource.GetDefaultView(grid.ItemsSource) != null)
@@ -272,16 +242,8 @@ namespace ExtendedGrid.Classes
                 {
                     if (string.IsNullOrEmpty(Convert.ToString(value)))
                     {
-                        string dummy = value == null ? null : "";
-                        switch (dummy)
-                        {
-                            case "":
-                                FilterExpression = "[" + columnName + "]" + " = ''";
-                                break;
-                            case null:
-                                FilterExpression = "[" + columnName + "]" + " IS Null";
-                                break;
-                        }
+                        var fi = value == null ? "IS Null" : "= ''";
+                        FilterExpression = $"[{columnName}] {fi}";
                     }
                     else
                     {
@@ -295,42 +257,39 @@ namespace ExtendedGrid.Classes
                             }
                             else
                             {
-                                Type t;
-                                var item =
-                                    readOnlyCollection.First(
-                                        c => c.Name == columnName);
-                                t = item.PropertyType;
+                                var item = readOnlyCollection.First(c => c.Name == columnName);
+                                Type t = item.PropertyType;
                                 if (t.BaseType != null && t.BaseType.ToString() == "System.Enum")
                                 {
                                     var value1 = Convert.ToInt32(Enum.Parse(t, Convert.ToString(value)));
-                                    FilterExpression = "[" + columnName + "]" + " " + " IN " + "(" + value1 + ")";
+                                    FilterExpression = $"[{columnName}] IN ({value1})";
                                 }
                                 else
-                                    FilterExpression = "[" + columnName + "]" + " " + " IN " + "(" + "'" + value + "'" + ")";
+                                    FilterExpression = $"[{columnName}] IN ('{value.ToString().Replace($"'", "''")}')";
                             }
                         }
                     }
                 }
+            }
 
-                int count = CurrentDistictValues.Count(c => c.IsChecked);
-                if (count == CurrentDistictValues.Count - 1)
-                {
-                    CurrentDistictValues[0].IsChecked = true;
-                    if (CurrentListBox != null)
-                    {
-                        CurrentListBox.ItemsSource = CurrentDistictValues;
-                        CurrentListBox.UpdateLayout();
-                        CurrentListBox.Items.Refresh();
-                    }
-                }
-
+            int count = CurrentDistictValues.Count(c => c.IsChecked);
+            if (count == CurrentDistictValues.Count - 1)
+            {
+                CurrentDistictValues[0].IsChecked = true;
                 if (CurrentListBox != null)
                 {
-                    var clearButton = FindControls.FindChild<Button>(CurrentListBox.Parent, "btnClear");
-                    if (clearButton != null)
-                    {
-                        clearButton.IsEnabled = CurrentDistictValues.Count(c => c.IsChecked) > 0;
-                    }
+                    CurrentListBox.ItemsSource = CurrentDistictValues;
+                    CurrentListBox.UpdateLayout();
+                    CurrentListBox.Items.Refresh();
+                }
+            }
+
+            if (CurrentListBox != null)
+            {
+                var clearButton = FindControls.FindChild<Button>(CurrentListBox.Parent, "btnClear");
+                if (clearButton != null)
+                {
+                    clearButton.IsEnabled = CurrentDistictValues.FirstOrDefault(c => c.IsChecked) != null;
                 }
             }
         }
@@ -371,51 +330,51 @@ namespace ExtendedGrid.Classes
                 if (Convert.ToString(value) == "" && value != null)
                 {
                     //NOT TESTED
-                    int startIndex1 = newFilter.IndexOf("[" + columnName + "]" + " = ''", StringComparison.Ordinal);
+                    int startIndex1 = newFilter.IndexOf($"[{columnName}] = ''", StringComparison.Ordinal);
                     if (startIndex1 != -1)
                     {
-                        int lastIndex1 = startIndex1 + Convert.ToString("[" + columnName + "]" + " = ''").Length;
+                        int lastIndex1 = startIndex1 + Convert.ToString($"[{columnName}] = ''").Length;
                         if (lastIndex1 == newFilter.Length)
                         {
-                            if (!newFilter.Contains("[" + columnName + "]" + " IS Null"))
+                            if (!newFilter.Contains($"[{columnName}] IS Null"))
                             {
-                                newFilter = newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " IS Null)");
+                                newFilter = newFilter.Insert(lastIndex1, $" Or ([{columnName}] IS Null)");
                             }
                         }
                         else
                         {
-                            if (!newFilter.Contains("[" + columnName + "]" + " = ''"))
+                            if (!newFilter.Contains($"[{columnName}] = ''"))
                             {
-                                newFilter = newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " = '') AND");
+                                newFilter = newFilter.Insert(lastIndex1, $" Or ([{columnName}] = '') AND");
                             }
                         }
                     }
                     else
                     {
                         //TESTED
-                        string actaulFilter = newFilter.Substring(startIndex + (columnName + " " + " IN ").Length + 1);
+                        string actaulFilter = newFilter.Substring(startIndex + $"{columnName} IN ".Length + 1);
                         int lastIndex = actaulFilter.IndexOf(")", StringComparison.Ordinal);
                         actaulFilter = actaulFilter.Substring(0, lastIndex);
-                        int isNullLastIndex = newFilter.IndexOf("[" + columnName + "] IS Null)", StringComparison.Ordinal);
-                        int lastIndex1 = startIndex + ("[" + columnName + "]" + " " + " IN ").Length +
+                        int isNullLastIndex = newFilter.IndexOf($"[{columnName}] IS Null)", StringComparison.Ordinal);
+                        int lastIndex1 = startIndex + ($"[{columnName}] IN ").Length +
                                          actaulFilter.Length;
                         if (lastIndex1 < isNullLastIndex)
                         {
-                            lastIndex1 = isNullLastIndex + Convert.ToString("[" + columnName + "] IS Null)").Length;
+                            lastIndex1 = isNullLastIndex + $"[{columnName}] IS Null)".Length;
                         }
                         if (lastIndex1 + 1 == newFilter.Length) lastIndex1 = newFilter.Length;
                         if (lastIndex1 == newFilter.Length)
                         {
-                            if (!newFilter.Contains("[" + columnName + "]" + " = ''"))
+                            if (!newFilter.Contains($"[{columnName}] = ''"))
                             {
-                                newFilter = newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " = '')");
+                                newFilter = newFilter.Insert(lastIndex1, $" Or ([{columnName}] = '')");
                             }
                         }
                         else
                         {
-                            if (!newFilter.Contains("[" + columnName + "]" + " = ''"))
+                            if (!newFilter.Contains($"[{columnName}] = ''"))
                             {
-                                newFilter = newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " = '') AND");
+                                newFilter = newFilter.Insert(lastIndex1, $" Or ([{columnName}] = '') AND");
                             }
                         }
                     }
@@ -423,100 +382,93 @@ namespace ExtendedGrid.Classes
                 else if (value == null)
                 {
                     //NOT TESTED
-                    int startIndex1 = newFilter.IndexOf("[" + columnName + "]" + " IS Null)", StringComparison.Ordinal);
+                    int startIndex1 = newFilter.IndexOf($"[{columnName}] IS Null)", StringComparison.Ordinal);
                     if (startIndex1 != -1)
                     {
-                        if (!newFilter.Contains("[" + columnName + "]" + " IS Null"))
+                        if (!newFilter.Contains($"[{columnName}] IS Null"))
                         {
-                            int lastIndex1 = startIndex1 + Convert.ToString("[" + columnName + "]" + " IS Null)").Length;
+                            int lastIndex1 = startIndex1 + Convert.ToString($"[{columnName}] IS Null)").Length;
                             int x = 0;
                             if (lastIndex1 == newFilter.Length)
                                 x = 0;
                             else if (lastIndex1 + 1 == newFilter.Length)
                                 x = 1;
                             newFilter = lastIndex1 + x == newFilter.Length
-                                            ? newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " IS Null)")
-                                            : newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " IS Null) AND");
+                                            ? newFilter.Insert(lastIndex1, $" Or ([{columnName}] IS Null)")
+                                            : newFilter.Insert(lastIndex1, $" Or ([{columnName}] IS Null) AND");
                         }
                     }
                     else
                     {
                         //TESTED
-                        if (!newFilter.Contains("[" + columnName + "]" + " IS Null"))
+                        if (!newFilter.Contains($"[{columnName}] IS Null"))
                         {
                             string actaulFilter =
-                                newFilter.Substring(startIndex + (columnName + " " + " IN ").Length + 1);
+                                newFilter.Substring(startIndex + $"{columnName} IN ".Length + 1);
                             int lastIndex = actaulFilter.IndexOf(")", StringComparison.Ordinal);
                             actaulFilter = actaulFilter.Substring(0, lastIndex);
 
 
-                            int isNullLastIndex = newFilter.IndexOf("([" + columnName + "]" + " = '')", StringComparison.Ordinal);
-                            int lastIndex1 = startIndex + ("[" + columnName + "]" + " " + " IN ").Length +
+                            int isNullLastIndex = newFilter.IndexOf($"([{columnName}] = '')", StringComparison.Ordinal);
+                            int lastIndex1 = startIndex + ($"[{columnName}] IN ").Length +
                                              actaulFilter.Length + 1;
                             if (isNullLastIndex > lastIndex1)
                             {
-                                lastIndex1 = isNullLastIndex +
-                                             Convert.ToString("([" + columnName + "]" + " = '')").Length;
+                                lastIndex1 = isNullLastIndex + $"([{columnName}] = '')".Length;
                             }
                             if (lastIndex1 > newFilter.Length)
                                 lastIndex1 = newFilter.Length;
 
                             newFilter = lastIndex1 == newFilter.Length
-                                            ? newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " IS Null)")
-                                            : newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " IS Null) AND");
+                                            ? newFilter.Insert(lastIndex1, $" Or ([{columnName}] IS Null)")
+                                            : newFilter.Insert(lastIndex1, $" Or ([{columnName}] IS Null) AND");
                         }
                     }
                 }
             }
-            else if (newFilter.Contains("[" + columnName + "]" + " = ''"))
+            else if (newFilter.Contains($"[{columnName}] = ''"))
             {
                 if (Convert.ToString(value) == "")
                 {
                     //NOT TESTED
-                    int startIndex1 = newFilter.IndexOf("[" + columnName + "]" + " = ''", StringComparison.Ordinal);
+                    int startIndex1 = newFilter.IndexOf($"[{columnName}] = ''", StringComparison.Ordinal);
                     if (startIndex1 != -1)
                     {
-                        int lastIndex1 = startIndex1 + Convert.ToString("[" + columnName + "]" + " = ''").Length;
+                        int lastIndex1 = startIndex1 + Convert.ToString($"[{columnName}] = ''").Length;
                         int x = 0;
                         if (lastIndex1 == newFilter.Length)
                             x = 0;
                         else if (lastIndex1 + 1 == newFilter.Length)
                             x = 1;
-                        if (!newFilter.Contains("[" + columnName + "]" + " IS Null"))
+                        if (!newFilter.Contains($"[{columnName}] IS Null"))
                         {
                             newFilter = lastIndex1 + x == newFilter.Length
-                                            ? newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " IS Null)")
-                                            : newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " IS Null) AND");
+                                            ? newFilter.Insert(lastIndex1, $" Or ([{columnName}] IS Null)")
+                                            : newFilter.Insert(lastIndex1, $" Or ([{columnName}] IS Null) AND");
                         }
                     }
                 }
                 else
                 {
                     //NOT TESTED
-                    int startIndex1 = newFilter.IndexOf("[" + columnName + "]" + " = ''", StringComparison.Ordinal);
-                    int startIndex2 = newFilter.IndexOf("[" + columnName + "]" + " IS Null", StringComparison.Ordinal);
+                    int startIndex1 = newFilter.IndexOf($"[{columnName}] = ''", StringComparison.Ordinal);
+                    int startIndex2 = newFilter.IndexOf($"[{columnName}] IS Null", StringComparison.Ordinal);
                     if (startIndex2 != -1)
-                    {
                         startIndex1 = Math.Min(startIndex1, startIndex2);
-                    }
                     if (startIndex1 != -1)
-                    {
-                        newFilter = newFilter.Insert(startIndex1,
-                                                     "[" + columnName + "]" + " " + " IN " + "(" + "'" + value + "'" +
-                                                     ") Or ");
-                    }
+                        newFilter = newFilter.Insert(startIndex1, $"[{columnName}] IN ('{value}') Or ");
                 }
             }
-            else if (newFilter.Contains("[" + columnName + "]" + " IS Null"))
+            else if (newFilter.Contains($"[{columnName}] IS Null"))
             {
                 if (Convert.ToString(value) == "")
                 {
                     //TESTED
-                    int startIndex1 = newFilter.IndexOf("[" + columnName + "]" + " IS Null", StringComparison.Ordinal);
+                    int startIndex1 = newFilter.IndexOf($"[{columnName}] IS Null", StringComparison.Ordinal);
                     if (startIndex1 != -1)
                     {
-                        int lastIndex1 = startIndex1 + Convert.ToString("[" + columnName + "]" + " IS Null").Length;
-                        if (!newFilter.Contains("[" + columnName + "]" + " = ''"))
+                        int lastIndex1 = startIndex1 + $"[{columnName}] IS Null".Length;
+                        if (!newFilter.Contains($"[{columnName}] = ''"))
                         {
                             int x = 0;
                             if (lastIndex1 == newFilter.Length)
@@ -526,16 +478,16 @@ namespace ExtendedGrid.Classes
                             else if (lastIndex1 + 2 == newFilter.Length)
                                 x = 2;
                             newFilter = lastIndex1 + x == newFilter.Length
-                                            ? newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " = '')")
-                                            : newFilter.Insert(lastIndex1, " Or ([" + columnName + "]" + " = '') AND");
+                                            ? newFilter.Insert(lastIndex1, $" Or ([{columnName}] = '')")
+                                            : newFilter.Insert(lastIndex1, $" Or ([{columnName}] = '') AND");
                         }
                     }
                 }
                 else
                 {
                     //NOT TESTED
-                    int startIndex1 = newFilter.IndexOf("[" + columnName + "]" + " = ''", StringComparison.Ordinal);
-                    int startIndex2 = newFilter.IndexOf("[" + columnName + "]" + " IS Null", StringComparison.Ordinal);
+                    int startIndex1 = newFilter.IndexOf($"[{columnName}] = ''", StringComparison.Ordinal);
+                    int startIndex2 = newFilter.IndexOf($"[{columnName}] IS Null", StringComparison.Ordinal);
                     if (startIndex2 != -1)
                     {
                         startIndex1 = Math.Min(startIndex1, startIndex2);
@@ -543,7 +495,7 @@ namespace ExtendedGrid.Classes
                     if (startIndex1 != -1)
                     {
                         newFilter = newFilter.Insert(startIndex1,
-                                                     "[" + columnName + "]" + " " + " IN " + "(" + "'" + value + "'" +
+                                                     $"[{columnName}] IN ('{value}'" +
                                                      ") Or ");
                     }
                 }
@@ -552,11 +504,11 @@ namespace ExtendedGrid.Classes
             {
                 if (Convert.ToString(value) == "" && value != null)
                 {
-                    newFilter = newFilter + "AND ([" + columnName + "]" + " = '')";
+                    newFilter = $"{newFilter}AND ([{columnName}] = '')";
                 }
                 else if (value == null)
                 {
-                    newFilter = newFilter + "AND ([" + columnName + "]" + " IS Null)";
+                    newFilter = $"{newFilter}AND ([{columnName}] IS Null)";
                 }
             }
 
@@ -602,17 +554,17 @@ namespace ExtendedGrid.Classes
             }
             string newFilter = exisitngFilter;
 
-            if (newFilter.Contains("[" + columnName + "]" + " " + " IN ") ||
-                newFilter.Contains("[" + columnName + "]" + " = ''") ||
-                newFilter.Contains("[" + columnName + "]" + " IS Null"))
+            if (newFilter.Contains($"[{columnName}] IN ") ||
+                newFilter.Contains($"[{columnName}] = ''") ||
+                newFilter.Contains($"[{columnName}] IS Null"))
             {
-                int startIndex = newFilter.IndexOf("[" + columnName + "]" + " " + " IN ", StringComparison.Ordinal);
+                int startIndex = newFilter.IndexOf($"[{columnName}] IN ", StringComparison.Ordinal);
                 if (startIndex != -1)
                 {
                     if (!string.IsNullOrEmpty(Convert.ToString(value)))
                     {
                         string actaulFilter =
-                            newFilter.Substring(startIndex + ("[" + columnName + "]" + " " + " IN ").Length + 1);
+                            newFilter.Substring(startIndex + ($"[{columnName}] IN ").Length + 1);
                         int lastIndex = actaulFilter.LastIndexOf(")", StringComparison.Ordinal);
                         while (lastIndex > 0)
                         {
@@ -620,22 +572,19 @@ namespace ExtendedGrid.Classes
                             lastIndex = actaulFilter.LastIndexOf(")", StringComparison.Ordinal);
                         }
 
+                        string escapedValue = value.ToString().Replace("'", "''");
                         string[] listOfFilter = actaulFilter.Split(',');
-                        if (listOfFilter.Contains("'" + value + "'"))
+                        if (listOfFilter.Contains($"'{escapedValue}'"))
                             return exisitngFilter;
-                        int indexToput = startIndex + ("[" + columnName + "]" + " " + " IN ").Length +
+                        int indexToput = startIndex + ($"[{columnName}] IN ").Length +
                                          actaulFilter.Length + 1;
-                        newFilter = !isEnumType ? newFilter.Insert(indexToput, "," + "'" + value + "'") : newFilter.Insert(indexToput, "," + enumValue);
+                        newFilter = !isEnumType ? newFilter.Insert(indexToput, $",'{escapedValue}'") : newFilter.Insert(indexToput, $",{enumValue}");
                     }
                     else
-                    {
                         newFilter = FilterNullAndBlanlValues(value, columnName, newFilter, startIndex);
-                    }
                 }
                 else
-                {
                     newFilter = FilterNullAndBlanlValues(value, columnName, newFilter, startIndex);
-                }
 
                 return newFilter.Trim();
             }
@@ -643,7 +592,7 @@ namespace ExtendedGrid.Classes
 
             if (columnNameHasIndexer(columnName)) // && newFilter.IndexOf("True AND ") == -1)
             {
-                //newFilter = "True AND " + newFilter;
+                //newFilter = "True AND {newFilter;
             }
             else
             {
@@ -651,24 +600,18 @@ namespace ExtendedGrid.Classes
                 {
                     if (!string.IsNullOrEmpty(Convert.ToString(value)))
                     {
-                        int idexAppliedOn = CurrentGrid.Columns.Count(gridColumn => newFilter.Contains("[" + gridColumn.SortMemberPath + "]" + " " + " IN ") || newFilter.Contains("[" + gridColumn.SortMemberPath + "]" + " = ''") || newFilter.Contains("[" + gridColumn.SortMemberPath + "]" + " IS Null"));
+                        int idexAppliedOn = CurrentGrid.Columns.Count(gridColumn => newFilter.Contains($"[{gridColumn.SortMemberPath}] IN") || newFilter.Contains($"[{gridColumn.SortMemberPath}] = ''") || newFilter.Contains($"[{gridColumn.SortMemberPath}] IS Null"));
                         if (idexAppliedOn == 1)
-                            newFilter = "(" + newFilter + ")";
+                            newFilter = $"({newFilter})";
 
                         if (!isEnumType)
-                        {
-                            newFilter = newFilter + " AND " + "(" + "[" + columnName + "]" + " " + " IN " + "(" + "'" + value +
-                                  "'" + ")" + ")";
-                        }
+                            newFilter += $" AND ([{columnName}] IN ('{value.ToString().Replace($"'","''")}'))";
                         else
-                        {
-                            newFilter = newFilter + " AND " + "(" + "[" + columnName + "]" + " " + " IN " + "(" + enumValue +
-                                   ")" + ")";
-                        }
+                            newFilter += $" AND ([{columnName}] IN ({enumValue}))";
                     }
                     else
                     {
-                        int startIndex = newFilter.IndexOf("[" + columnName + "]" + " " + " IN ", StringComparison.Ordinal);
+                        int startIndex = newFilter.IndexOf($"[{columnName}] IN ", StringComparison.Ordinal);
                         newFilter = FilterNullAndBlanlValues(value, columnName, newFilter, startIndex);
                     }
                 }
@@ -677,15 +620,15 @@ namespace ExtendedGrid.Classes
                     if (!string.IsNullOrEmpty(Convert.ToString(value)))
                     {
                         if (!isEnumType)
-                            newFilter = "[" + columnName + "]" + " " + " IN " + "(" + "'" + value + "'" + ")";
+                            newFilter = $"[{columnName}] IN ('{value}')";
                         else
                         {
-                            newFilter = "[" + columnName + "]" + " " + " IN " + "(" + value + ")";
+                            newFilter = $"[{columnName}] IN ({value})";
                         }
                     }
                     else
                     {
-                        int startIndex = newFilter.IndexOf("[" + columnName + "]" + " " + " IN ", StringComparison.Ordinal);
+                        int startIndex = newFilter.IndexOf($"[{columnName}] IN ", StringComparison.Ordinal);
                         newFilter = FilterNullAndBlanlValues(value, columnName, newFilter, startIndex);
                     }
                 }
@@ -698,11 +641,11 @@ namespace ExtendedGrid.Classes
         private List<string> GetFilteredColumnValues(string columnName, DataView view)
         {
             string newFilter = view.RowFilter;
-            if (newFilter.Contains("[" + columnName + "]" + " " + " IN "))
+            if (newFilter.Contains($"[{columnName}] IN "))
             {
-                int startIndex = newFilter.IndexOf("[" + columnName + "]" + " " + " IN ", StringComparison.Ordinal);
+                int startIndex = newFilter.IndexOf($"[{columnName}] IN ", StringComparison.Ordinal);
                 string actaulFilter =
-                    newFilter.Substring(startIndex + ("[" + columnName + "]" + " " + " IN ").Length + 1);
+                    newFilter.Substring(startIndex + ($"[{columnName}] IN ").Length + 1);
                 int lastIndex = actaulFilter.IndexOf(")", StringComparison.Ordinal);
                 actaulFilter = actaulFilter.Substring(0, lastIndex);
                 string[] listOfFilter = actaulFilter.Split(',');
@@ -725,22 +668,22 @@ namespace ExtendedGrid.Classes
                         {
                             if (current.Length > 1 && current[current.Length - 2].ToString(CultureInfo.InvariantCulture) != "'")
                             {
-                                newfilterYoBeAdded = newfilterYoBeAdded + "," + current;
+                                newfilterYoBeAdded = $"{newfilterYoBeAdded},{current}";
                                 newList.Add(newfilterYoBeAdded);
                                 break;
                             }
                         }
                         else
                         {
-                            newfilterYoBeAdded = newfilterYoBeAdded + "," + current;
+                            newfilterYoBeAdded = $"{newfilterYoBeAdded},{current}";
                         }
                     }
                 }
-                if (newFilter.Contains("([" + columnName + "] IS Null)"))
+                if (newFilter.Contains($"([{columnName}] IS Null)"))
                 {
                     newList.Add(null);
                 }
-                if (newFilter.Contains("([" + columnName + "] = '')"))
+                if (newFilter.Contains($"([{columnName}] = '')"))
                 {
                     newList.Add("");
                 }
@@ -755,11 +698,11 @@ namespace ExtendedGrid.Classes
         {
             string newFilter = rowFilter;
             List<String> newList = new List<String>();
-            if (newFilter.Contains("[" + columnName + "]" + " " + " IN "))
+            if (newFilter.Contains($"[{columnName}] IN "))
             {
-                int startIndex = newFilter.IndexOf("[" + columnName + "]" + " " + " IN ", StringComparison.Ordinal);
+                int startIndex = newFilter.IndexOf($"[{columnName}] IN ", StringComparison.Ordinal);
                 string actaulFilter =
-                    newFilter.Substring(startIndex + ("[" + columnName + "]" + " " + " IN ").Length + 1);
+                    newFilter.Substring(startIndex + ($"[{columnName}] IN ").Length + 1);
                 int lastIndex = actaulFilter.IndexOf(")", StringComparison.Ordinal);
                 actaulFilter = actaulFilter.Substring(0, lastIndex);
                 string[] listOfFilter = actaulFilter.Split(',');
@@ -782,22 +725,22 @@ namespace ExtendedGrid.Classes
                         {
                             if (current.Length > 1 && current[current.Length - 2].ToString(CultureInfo.InvariantCulture) != "'")
                             {
-                                newfilterYoBeAdded = newfilterYoBeAdded + "," + current;
+                                newfilterYoBeAdded = $"{newfilterYoBeAdded},{current}";
                                 newList.Add(newfilterYoBeAdded);
                                 break;
                             }
                         }
                         else
                         {
-                            newfilterYoBeAdded = newfilterYoBeAdded + "," + current;
+                            newfilterYoBeAdded = $"{newfilterYoBeAdded},{current}";
                         }
                     }
                 }
-                if (newFilter.Contains("([" + columnName + "] IS Null)"))
+                if (newFilter.Contains($"([{columnName}] IS Null)"))
                 {
                     newList.Add(null);
                 }
-                if (newFilter.Contains("([" + columnName + "] = '')"))
+                if (newFilter.Contains($"([{columnName}] = '')"))
                 {
                     newList.Add("");
                 }
@@ -851,37 +794,37 @@ namespace ExtendedGrid.Classes
             if (!string.IsNullOrEmpty(newFilter))
             {
 
-                if (newFilter.Contains("[" + columnName + "]" + " " + " IN "))
+                if (newFilter.Contains($"[{columnName}] IN "))
                 {
-                    int startIndex = newFilter.IndexOf("[" + columnName + "]" + " " + " IN ", StringComparison.Ordinal);
+                    int startIndex = newFilter.IndexOf($"[{columnName}] IN ", StringComparison.Ordinal);
                     string actaulFilter =
-                        newFilter.Substring(startIndex + ("[" + columnName + "]" + " " + " IN ").Length + 1);
+                        newFilter.Substring(startIndex + ($"[{columnName}] IN ").Length + 1);
                     int lastIndex = actaulFilter.IndexOf(")", StringComparison.Ordinal);
                     actaulFilter = actaulFilter.Substring(0, lastIndex);
-                    string relalValue = "[" + columnName + "]" + " " + " IN " + "(" + actaulFilter + ")";
-                    if (newFilter.Contains("(" + relalValue + ")"))
+                    string relalValue = $"[{columnName}] IN ({actaulFilter})";
+                    if (newFilter.Contains($"({relalValue})"))
                     {
-                        newFilter = newFilter.Replace("(" + relalValue + ")", "");
+                        newFilter = newFilter.Replace($"({relalValue})", "");
                         if (newFilter.IndexOf("( AND (", StringComparison.Ordinal) == 0)
                         {
-                            newFilter = newFilter.Replace("( AND (", "");
+                            newFilter = newFilter.Replace($"( AND (", "");
                         }
                         if (newFilter.IndexOf("(((", StringComparison.Ordinal) == 0)
                         {
                             newFilter = newFilter.Substring(2);
                         }
-                        if (newFilter.Contains("))) AND "))
+                        if (newFilter.Contains($"))) AND "))
                         {
-                            newFilter = newFilter.Replace("))) AND ", ")");
+                            newFilter = newFilter.Replace($"))) AND ", ")");
                         }
 
                         if (newFilter.LastIndexOf(" AND", StringComparison.Ordinal) == newFilter.Length - 5)
                         {
                             newFilter = newFilter.Substring(0, newFilter.Length - 5);
                         }
-                        if (newFilter.Contains(" AND )"))
+                        if (newFilter.Contains($" AND )"))
                         {
-                            newFilter = newFilter.Replace(" AND )", "");
+                            newFilter = newFilter.Replace($" AND )", "");
                         }
                         if (newFilter.IndexOf("((", StringComparison.Ordinal) == 0)
                         {
@@ -953,7 +896,7 @@ namespace ExtendedGrid.Classes
                     var clearButton = FindControls.FindChild<Button>(CurrentListBox.Parent, "btnClear");
                     if (clearButton != null)
                     {
-                        clearButton.IsEnabled = CurrentDistictValues.Count(c => c.IsChecked) > 0;
+                        clearButton.IsEnabled = CurrentDistictValues.FirstOrDefault(c => c.IsChecked) != null;
                     }
                 }
             }
@@ -963,7 +906,7 @@ namespace ExtendedGrid.Classes
 
         public void RemoveFilters(DataGrid grid, string columnName, object value)
         {
-            System.Diagnostics.Debug.WriteLine(string.Format("RemoveFilters col:{0} val:{1}", columnName, value));
+            System.Diagnostics.Debug.WriteLine($"RemoveFilters col:{columnName} val:{value}");
             var isEnumType = false;
             int enumValue = -1;
             if (CurrentGrid.ItemsSource is DataView)
@@ -1026,61 +969,62 @@ namespace ExtendedGrid.Classes
             if (!string.IsNullOrEmpty(rowFilter))
             {
                 string newFilter = rowFilter;
-                if (newFilter.Contains("[" + columnName + "]" + " " + " IN ") &&
+                if (newFilter.Contains($"[{columnName}] IN ") &&
                     !string.IsNullOrEmpty(Convert.ToString(value)))
                 {
-                    int startIndex = newFilter.IndexOf("[" + columnName + "]" + " " + " IN ", StringComparison.Ordinal);
+                    int startIndex = newFilter.IndexOf($"[{columnName}] IN ", StringComparison.Ordinal);
                     string actaulFilter =
-                        newFilter.Substring(startIndex + ("[" + columnName + "]" + " " + " IN ").Length + 1);
+                        newFilter.Substring(startIndex + ($"[{columnName}] IN ").Length + 1);
                     int lastIndex = actaulFilter.LastIndexOf(")", StringComparison.Ordinal);
                     actaulFilter = actaulFilter.Substring(0, lastIndex);
                     string[] listOfFilter = actaulFilter.Split(',');
                     if (!isEnumType)
                     {
-                        if (listOfFilter.Contains("'" + value + "'"))
+                        string escapedValue = value.ToString().Replace("'", "''");
+                        if (listOfFilter.Contains($"'{escapedValue}'"))
                         {
-                            string realFilter = "[" + columnName + "]" + " " + " IN " + "(" + actaulFilter + ")";
-                            string replaced = realFilter.Replace("'" + value + "'", "");
-                            if (replaced.Contains(",,"))
+                            string realFilter = $"[{columnName}] IN ({actaulFilter})";
+                            string replaced = realFilter.Replace($"'{escapedValue}'", "");
+                            if (replaced.Contains($",,"))
                             {
-                                replaced = replaced.Replace(",,", ",");
+                                replaced = replaced.Replace($",,", ",");
                             }
-                            if (replaced.Contains(",)"))
+                            if (replaced.Contains($",)"))
                             {
-                                replaced = replaced.Replace(",)", ")");
+                                replaced = replaced.Replace($",)", ")");
                             }
-                            if (replaced.Contains("()"))
+                            if (replaced.Contains($"()"))
                             {
                                 replaced = "";
                             }
-                            if (replaced.Contains("(,"))
+                            if (replaced.Contains($"(,"))
                             {
-                                replaced = replaced.Replace("(,", "(");
+                                replaced = replaced.Replace($"(,", "(");
                             }
-                            if (replaced.Contains(",)"))
+                            if (replaced.Contains($",)"))
                             {
-                                replaced = replaced.Replace(",)", ")");
+                                replaced = replaced.Replace($",)", ")");
                             }
-                            if (newFilter.Contains(" AND ()"))
+                            if (newFilter.Contains($" AND ()"))
                             {
-                                newFilter = newFilter.Replace(" AND ()", "");
+                                newFilter = newFilter.Replace($" AND ()", "");
                             }
                             newFilter = newFilter.Replace(realFilter, replaced);
-                            if (newFilter.Contains("() AND "))
+                            if (newFilter.Contains($"() AND "))
                             {
-                                newFilter = newFilter.Replace("() AND ", "");
+                                newFilter = newFilter.Replace($"() AND ", "");
                             }
                             if (newFilter.IndexOf("(((", StringComparison.Ordinal) == 0)
                             {
                                 newFilter = newFilter.Substring(2);
                             }
-                            if (newFilter.Contains(")))"))
+                            if (newFilter.Contains($")))"))
                             {
-                                newFilter = newFilter.Replace(")))", "))");
+                                newFilter = newFilter.Replace($")))", "))");
                             }
-                            if (newFilter.Contains("()"))
+                            if (newFilter.Contains($"()"))
                             {
-                                newFilter = newFilter.Replace("()", "");
+                                newFilter = newFilter.Replace($"()", "");
                             }
                             if (newFilter.LastIndexOf(" AND ", StringComparison.Ordinal) == newFilter.Length - 5)
                             {
@@ -1148,48 +1092,48 @@ namespace ExtendedGrid.Classes
                     {
                         if (listOfFilter.Contains(enumValue.ToString(CultureInfo.InvariantCulture)))
                         {
-                            string realFilter = "[" + columnName + "]" + " " + " IN " + "(" + actaulFilter + ")";
+                            string realFilter = $"[{columnName}] IN ({actaulFilter})";
                             string replaced = realFilter.Replace(enumValue.ToString(CultureInfo.InvariantCulture), "");
-                            if (replaced.Contains(",,"))
+                            if (replaced.Contains($",,"))
                             {
-                                replaced = replaced.Replace(",,", ",");
+                                replaced = replaced.Replace($",,", ",");
                             }
-                            if (replaced.Contains(",)"))
+                            if (replaced.Contains($",)"))
                             {
-                                replaced = replaced.Replace(",)", ")");
+                                replaced = replaced.Replace($",)", ")");
                             }
-                            if (replaced.Contains("()"))
+                            if (replaced.Contains($"()"))
                             {
                                 replaced = "";
                             }
-                            if (replaced.Contains("(,"))
+                            if (replaced.Contains($"(,"))
                             {
-                                replaced = replaced.Replace("(,", "(");
+                                replaced = replaced.Replace($"(,", "(");
                             }
-                            if (replaced.Contains(",)"))
+                            if (replaced.Contains($",)"))
                             {
-                                replaced = replaced.Replace(",)", ")");
+                                replaced = replaced.Replace($",)", ")");
                             }
-                            if (newFilter.Contains(" AND ()"))
+                            if (newFilter.Contains($" AND ()"))
                             {
-                                newFilter = newFilter.Replace(" AND ()", "");
+                                newFilter = newFilter.Replace($" AND ()", "");
                             }
                             newFilter = newFilter.Replace(realFilter, replaced);
-                            if (newFilter.Contains("() AND "))
+                            if (newFilter.Contains($"() AND "))
                             {
-                                newFilter = newFilter.Replace("() AND ", "");
+                                newFilter = newFilter.Replace($"() AND ", "");
                             }
                             if (newFilter.IndexOf("(((", StringComparison.Ordinal) == 0)
                             {
                                 newFilter = newFilter.Substring(2);
                             }
-                            if (newFilter.Contains(")))"))
+                            if (newFilter.Contains($")))"))
                             {
-                                newFilter = newFilter.Replace(")))", "))");
+                                newFilter = newFilter.Replace($")))", "))");
                             }
-                            if (newFilter.Contains("()"))
+                            if (newFilter.Contains($"()"))
                             {
-                                newFilter = newFilter.Replace("()", "");
+                                newFilter = newFilter.Replace($"()", "");
                             }
                             if (newFilter.LastIndexOf(" AND ", StringComparison.Ordinal) == newFilter.Length - 5)
                             {
@@ -1275,11 +1219,11 @@ namespace ExtendedGrid.Classes
                                     continue;
                                 if (actualValue == "")
                                 {
-                                    actualValue = val + "'";
+                                    actualValue = $"{val}'";
                                 }
                                 else
                                 {
-                                    actualValue = actualValue + "," + "'" + val + "'";
+                                    actualValue = $"{actualValue},'{val}'";
                                 }
                             }
                             actualValue = actualValue.Substring(0, actualValue.Length - 1);
@@ -1309,11 +1253,11 @@ namespace ExtendedGrid.Classes
                                 {
                                     if (actualValue == "")
                                     {
-                                        actualValue = data + "'";
+                                        actualValue = $"{data}'";
                                     }
                                     else
                                     {
-                                        actualValue = actualValue + "," + "'" + data + "'";
+                                        actualValue = $"{actualValue},'{data}'";
                                     }
                                     unquieValues.Add(data);
                                 }
@@ -1332,48 +1276,48 @@ namespace ExtendedGrid.Classes
                             if (grid.ItemsSource is DataView)
                             {
                                 var itemSource = grid.ItemsSource as DataView;
-                                if (newFilter.Contains("Or ([" + columnName + "] IS Null)"))
+                                if (newFilter.Contains($"Or ([{columnName}] IS Null)"))
                                 {
-                                    newFilter = newFilter.Replace("Or ([" + columnName + "] IS Null)", "");
+                                    newFilter = newFilter.Replace($"Or ([{columnName}] IS Null)", "");
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("([" + columnName + "] IS Null)"))
+                                else if (newFilter.Contains($"([{columnName}] IS Null)"))
                                 {
-                                    newFilter = newFilter.Replace("([" + columnName + "] IS Null)", "");
+                                    newFilter = newFilter.Replace($"([{columnName}] IS Null)", "");
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("Or [" + columnName + "] IS Null"))
+                                else if (newFilter.Contains($"Or [{columnName}] IS Null"))
                                 {
-                                    newFilter = newFilter.Replace("Or [" + columnName + "] IS Null", "");
+                                    newFilter = newFilter.Replace($"Or [{columnName}] IS Null", "");
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("[" + columnName + "] IS Null"))
+                                else if (newFilter.Contains($"[{columnName}] IS Null"))
                                 {
-                                    newFilter = newFilter.Replace("[" + columnName + "] IS Null", "");
+                                    newFilter = newFilter.Replace($"[{columnName}] IS Null", "");
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
                             }
                             else if (CollectionViewSource.GetDefaultView(grid.ItemsSource) != null)
                             {
                                 var mainGrid = grid as ExtendedDataGrid;
-                                if (newFilter.Contains("Or ([" + columnName + "] IS Null)"))
+                                if (newFilter.Contains($"Or ([{columnName}] IS Null)"))
                                 {
-                                    newFilter = newFilter.Replace("Or ([" + columnName + "] IS Null)", "");
+                                    newFilter = newFilter.Replace($"Or ([{columnName}] IS Null)", "");
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("([" + columnName + "] IS Null)"))
+                                else if (newFilter.Contains($"([{columnName}] IS Null)"))
                                 {
-                                    newFilter = newFilter.Replace("([" + columnName + "] IS Null)", "");
+                                    newFilter = newFilter.Replace($"([{columnName}] IS Null)", "");
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("Or [" + columnName + "] IS Null"))
+                                else if (newFilter.Contains($"Or [{columnName}] IS Null"))
                                 {
-                                    newFilter = newFilter.Replace("Or [" + columnName + "] IS Null", "");
+                                    newFilter = newFilter.Replace($"Or [{columnName}] IS Null", "");
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("[" + columnName + "] IS Null"))
+                                else if (newFilter.Contains($"[{columnName}] IS Null"))
                                 {
-                                    newFilter = newFilter.Replace("[" + columnName + "] IS Null", "");
+                                    newFilter = newFilter.Replace($"[{columnName}] IS Null", "");
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
                             }
@@ -1384,50 +1328,50 @@ namespace ExtendedGrid.Classes
                             if (grid.ItemsSource is DataView)
                             {
                                 var itemSource = grid.ItemsSource as DataView;
-                                if (newFilter.Contains("Or ([" + columnName + "] = '')"))
+                                if (newFilter.Contains($"Or ([{columnName}] = '')"))
                                 {
-                                    newFilter = newFilter.Replace("Or ([" + columnName + "] = '')", "");
+                                    newFilter = newFilter.Replace($"Or ([{columnName}] = '')", "");
 
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("([" + columnName + "] = '')"))
+                                else if (newFilter.Contains($"([{columnName}] = '')"))
                                 {
-                                    newFilter = newFilter.Replace("([" + columnName + "] = '')", "");
+                                    newFilter = newFilter.Replace($"([{columnName}] = '')", "");
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("Or [" + columnName + "] = ''"))
+                                else if (newFilter.Contains($"Or [{columnName}] = ''"))
                                 {
-                                    newFilter = newFilter.Replace("Or [" + columnName + "] = ''", "");
+                                    newFilter = newFilter.Replace($"Or [{columnName}] = ''", "");
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("[" + columnName + "] = ''"))
+                                else if (newFilter.Contains($"[{columnName}] = ''"))
                                 {
-                                    newFilter = newFilter.Replace("[" + columnName + "] = ''", "");
+                                    newFilter = newFilter.Replace($"[{columnName}] = ''", "");
                                     itemSource.RowFilter = CorrectRowFilter(newFilter);
                                 }
                             }
                             else if (CollectionViewSource.GetDefaultView(grid.ItemsSource) != null)
                             {
                                 var mainGrid = grid as ExtendedDataGrid;
-                                if (newFilter.Contains("Or ([" + columnName + "] = '')"))
+                                if (newFilter.Contains($"Or ([{columnName}] = '')"))
                                 {
-                                    newFilter = newFilter.Replace("Or ([" + columnName + "] = '')", "");
+                                    newFilter = newFilter.Replace($"Or ([{columnName}] = '')", "");
 
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("([" + columnName + "] = '')"))
+                                else if (newFilter.Contains($"([{columnName}] = '')"))
                                 {
-                                    newFilter = newFilter.Replace("([" + columnName + "] = '')", "");
+                                    newFilter = newFilter.Replace($"([{columnName}] = '')", "");
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("Or [" + columnName + "] = ''"))
+                                else if (newFilter.Contains($"Or [{columnName}] = ''"))
                                 {
-                                    newFilter = newFilter.Replace("Or [" + columnName + "] = ''", "");
+                                    newFilter = newFilter.Replace($"Or [{columnName}] = ''", "");
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
-                                else if (newFilter.Contains("[" + columnName + "] = ''"))
+                                else if (newFilter.Contains($"[{columnName}] = ''"))
                                 {
-                                    newFilter = newFilter.Replace("[" + columnName + "] = ''", "");
+                                    newFilter = newFilter.Replace($"[{columnName}] = ''", "");
                                     mainGrid.AutoFilterHelper.FilterExpression = CorrectRowFilter(newFilter);
                                 }
                             }
@@ -1458,11 +1402,11 @@ namespace ExtendedGrid.Classes
                             continue;
                         if (actualValue == "")
                         {
-                            actualValue = val + "'";
+                            actualValue = $"{val}'";
                         }
                         else
                         {
-                            actualValue = actualValue + "," + "'" + val + "'";
+                            actualValue = $"{actualValue},'{val}'";
                         }
                     }
                     actualValue = actualValue.Substring(0, actualValue.Length - 1);
@@ -1495,11 +1439,11 @@ namespace ExtendedGrid.Classes
                         {
                             if (actualValue == "")
                             {
-                                actualValue = data + "'";
+                                actualValue = $"{data}'";
                             }
                             else
                             {
-                                actualValue = actualValue + "," + "'" + data + "'";
+                                actualValue = $"{actualValue},'{data}'";
                             }
                             unquieValues.Add(data);
                         }
@@ -1519,7 +1463,7 @@ namespace ExtendedGrid.Classes
                     if (clearButton != null)
                     {
                         if (CurrentDistictValues != null)
-                            clearButton.IsEnabled = CurrentDistictValues.Count(c => c.IsChecked) > 0;
+                            clearButton.IsEnabled = CurrentDistictValues.FirstOrDefault(c => c.IsChecked) != null;
 
                     }
                 }
@@ -1536,24 +1480,24 @@ namespace ExtendedGrid.Classes
 
             //IS NULL Values
 
-            if (newFilter.Contains("Or ([" + columnName + "] IS Null)"))
+            if (newFilter.Contains($"Or ([{columnName}] IS Null)"))
             {
-                newFilter = newFilter.Replace("Or ([" + columnName + "] IS Null)", "");
+                newFilter = newFilter.Replace($"Or ([{columnName}] IS Null)", "");
                 newFilter = CorrectRowFilter(newFilter);
             }
-            else if (newFilter.Contains("([" + columnName + "] IS Null)"))
+            else if (newFilter.Contains($"([{columnName}] IS Null)"))
             {
-                newFilter = newFilter.Replace("([" + columnName + "] IS Null)", "");
+                newFilter = newFilter.Replace($"([{columnName}] IS Null)", "");
                 newFilter = CorrectRowFilter(newFilter);
             }
-            else if (newFilter.Contains("Or [" + columnName + "] IS Null"))
+            else if (newFilter.Contains($"Or [{columnName}] IS Null"))
             {
-                newFilter = newFilter.Replace("Or [" + columnName + "] IS Null", "");
+                newFilter = newFilter.Replace($"Or [{columnName}] IS Null", "");
                 newFilter = CorrectRowFilter(newFilter);
             }
-            else if (newFilter.Contains("[" + columnName + "] IS Null"))
+            else if (newFilter.Contains($"[{columnName}] IS Null"))
             {
-                newFilter = newFilter.Replace("[" + columnName + "] IS Null", "");
+                newFilter = newFilter.Replace($"[{columnName}] IS Null", "");
                 newFilter = CorrectRowFilter(newFilter);
             }
 
@@ -1562,25 +1506,25 @@ namespace ExtendedGrid.Classes
             if (newFilter == null)
                 return null;
 
-            if (newFilter.Contains("Or ([" + columnName + "] = '')"))
+            if (newFilter.Contains($"Or ([{columnName}] = '')"))
             {
-                newFilter = newFilter.Replace("Or ([" + columnName + "] = '')", "");
+                newFilter = newFilter.Replace($"Or ([{columnName}] = '')", "");
 
                 newFilter = CorrectRowFilter(newFilter);
             }
-            else if (newFilter.Contains("([" + columnName + "] = '')"))
+            else if (newFilter.Contains($"([{columnName}] = '')"))
             {
-                newFilter = newFilter.Replace("([" + columnName + "] = '')", "");
+                newFilter = newFilter.Replace($"([{columnName}] = '')", "");
                 newFilter = CorrectRowFilter(newFilter);
             }
-            else if (newFilter.Contains("Or [" + columnName + "] = ''"))
+            else if (newFilter.Contains($"Or [{columnName}] = ''"))
             {
-                newFilter = newFilter.Replace("Or [" + columnName + "] = ''", "");
+                newFilter = newFilter.Replace($"Or [{columnName}] = ''", "");
                 newFilter = CorrectRowFilter(newFilter);
             }
-            else if (newFilter.Contains("[" + columnName + "] = ''"))
+            else if (newFilter.Contains($"[{columnName}] = ''"))
             {
-                newFilter = newFilter.Replace("[" + columnName + "] = ''", "");
+                newFilter = newFilter.Replace($"[{columnName}] = ''", "");
                 newFilter = CorrectRowFilter(newFilter);
             }
             else if (newFilter.IndexOf("() AND ", StringComparison.Ordinal) == 0)
@@ -1604,42 +1548,42 @@ namespace ExtendedGrid.Classes
             if (string.IsNullOrEmpty(newFilter))
                 return null;
 
-            if (newFilter.Contains(",)"))
+            if (newFilter.Contains($",)"))
             {
-                newFilter = newFilter.Replace(",)", ")");
+                newFilter = newFilter.Replace($",)", ")");
             }
-            if (newFilter.Contains("()"))
+            if (newFilter.Contains($"()"))
             {
                 newFilter = "";
             }
-            if (newFilter.Contains("(,"))
+            if (newFilter.Contains($"(,"))
             {
-                newFilter = newFilter.Replace("(,", "(");
+                newFilter = newFilter.Replace($"(,", "(");
             }
-            if (newFilter.Contains(",)"))
+            if (newFilter.Contains($",)"))
             {
-                newFilter = newFilter.Replace(",)", ")");
+                newFilter = newFilter.Replace($",)", ")");
             }
-            if (newFilter.Contains(" AND ()"))
+            if (newFilter.Contains($" AND ()"))
             {
-                newFilter = newFilter.Replace(" AND ()", "");
+                newFilter = newFilter.Replace($" AND ()", "");
             }
             newFilter = newFilter.Replace(exsistingFilter, newFilter);
-            if (newFilter.Contains("() AND "))
+            if (newFilter.Contains($"() AND "))
             {
-                newFilter = newFilter.Replace("() AND ", "");
+                newFilter = newFilter.Replace($"() AND ", "");
             }
             if (newFilter.IndexOf("(((", StringComparison.Ordinal) == 0)
             {
                 newFilter = newFilter.Substring(2);
             }
-            if (newFilter.Contains(")))"))
+            if (newFilter.Contains($")))"))
             {
-                newFilter = newFilter.Replace(")))", "))");
+                newFilter = newFilter.Replace($")))", "))");
             }
-            if (newFilter.Contains("()"))
+            if (newFilter.Contains($"()"))
             {
-                newFilter = newFilter.Replace("()", "");
+                newFilter = newFilter.Replace($"()", "");
             }
             if (newFilter.LastIndexOf(" AND ", StringComparison.Ordinal) == newFilter.Length - 5 && newFilter.Length - 5 != -1)
             {
@@ -1882,6 +1826,7 @@ namespace ExtendedGrid.Classes
             }
             return sb.ToString();
         }
+
         void UpdateFilter()
         {
             _collectionViewDt = null;
@@ -1889,10 +1834,10 @@ namespace ExtendedGrid.Classes
             {
                 return;
             }
-            var enumerator = _view.GetEnumerator();
-            if (enumerator.MoveNext()) // sets it to the first element
+
+            if (_view.MoveCurrentToFirst())
             {
-                var firstElement = enumerator.Current;
+                var firstElement = _view.CurrentItem;
                 if (firstElement != null && !string.IsNullOrEmpty(FilterExpression))
                 {
                     // build/rebuild data table
@@ -1932,6 +1877,7 @@ namespace ExtendedGrid.Classes
                     _collectionViewDt = dt;
                 }
             }
+
         }
 
         #endregion

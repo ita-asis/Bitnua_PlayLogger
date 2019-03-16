@@ -41,9 +41,8 @@ namespace PlayLogger
         }
 
         public static object s_LockDb = new object();
-        public static List<SongInfo> GetHistoryFromDb()
+        public static List<SongInfo> GetHistoryFromDb(DateTime? from = null)
         {
-
             List<SongInfo> history = null;
             using (var dbCon = MyDbConnectionBase.CreateInstace())
             {
@@ -55,7 +54,8 @@ namespace PlayLogger
                 try
                 {
                     history = new List<SongInfo>();
-                    string query = "SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory";
+                    string where = from == null ? null : $" WHERE LastPlayTime > '{from.Value.ToString("u")}'";
+                    string query = $"SELECT RecordId,Id,Title,LastPlayTime,PlayLocation FROM playhistory{where}";
 
                     lock (s_LockDb)
                     {

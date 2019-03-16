@@ -94,6 +94,11 @@
                             SmallChange="0.1"
                             Width="100" />
                 </StackPanel>
+                <CheckBox Margin="4" IsChecked="{Binding ShowLast24Hours}" Content="הצג 24 שעות אחרונות"
+                          VerticalAlignment="Center"/>
+
+                <Button Click="updateLastPlayedBtn_Click" Content="עדכון נוגן לאחרונה" Margin="4"/>
+
             </StackPanel>
 
             <StackPanel Grid.Row="1"

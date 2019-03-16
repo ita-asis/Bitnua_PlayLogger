@@ -4,21 +4,17 @@ using PlayLogger.Wpf;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
+using System.Data.OleDb;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace PlayLogger
 {
@@ -182,20 +178,16 @@ namespace PlayLogger
         private void loadData()
         {
             saveColInfo();
-            var data = DbHandler.GetHistoryFromDb();
+            var data = DbHandler.GetHistoryFromDb(ShowLast24Hours ? DateTime.Now.AddHours(-24) : (DateTime?)null);
             setSongs(data);
             reloadColInfo();
         }
 
         private IEnumerable<SongInfo> m_Songs;
+        public IEnumerable<SongInfo> SongsInfo => m_Songs;
+
         private Wpf.DynamicObjectBindingList m_SongsDynamic;
-        public object Songs
-        {
-            get
-            {
-                return m_SongsDynamic;
-            }
-        }
+        public object Songs => m_SongsDynamic;
 
         public void setSongs(IList<SongInfo> songs)
         {
@@ -320,7 +312,7 @@ namespace PlayLogger
             IsMonitoringXmlDir = true;
         }
 
-        private void monitor_FilesChanged(IEnumerable<string> files)
+        private async void monitor_FilesChanged(IEnumerable<string> files)
         {
             Debug.WriteLine(MethodBase.GetCurrentMethod().Name);
             PlayHistorySettings args = new PlayHistorySettings()
@@ -328,12 +320,13 @@ namespace PlayLogger
                 Files = files,
                 PlayLocation = Settings.PlayLocation
             };
-            Update(args);
+
+            await Update(args);
         }
 
         private void restartMonitor(object sender, PropertyChangedEventArgs e)
         {
-            if (IsMonitoringXmlDir && e.PropertyName == GetPropertyName(() => Settings.LastPlayedXmlDir))
+            if (IsMonitoringXmlDir && e.PropertyName == nameof(Settings.LastPlayedXmlDir))
             {
                 StopMonitoringXmlDir();
                 StartMonitoringXmlDir();
@@ -358,6 +351,51 @@ namespace PlayLogger
             else
             {
                 StartMonitoringXmlDir();
+            }
+        }
+
+        internal async Task UpdateLastPlayedOnAmpsDB(IEnumerable<SongInfo> songs)
+        {
+            if (string.IsNullOrEmpty(Settings.AmpsDB) ||
+                !File.Exists(Settings.AmpsDB) ||
+                songs == null)
+                return;
+
+            IsLoading = true;
+            await Task.Run(() => updateLastPlayed(songs));
+            IsLoading = false;
+        }
+
+        private void updateLastPlayed(IEnumerable<SongInfo> songs)
+        {
+            OleDbConnectionStringBuilder b = new OleDbConnectionStringBuilder()
+            {
+                //Provider = "Microsoft.Jet.OLEDB.4.0",
+                Provider = "Microsoft.ACE.OLEDB.12.0",
+                DataSource = Settings.AmpsDB,
+                PersistSecurityInfo = false
+            };
+
+            using (var connection = new OleDbConnection(b.ConnectionString))
+            {
+                connection.Open();
+                var query = "Update Songs SET SongLastPlayed = @lastPlayed WHERE ID = @songID AND SongLastPlayed < @lastPlayed";
+
+                using (OleDbCommand cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = query;
+
+                    foreach (var song in songs)
+                    {
+                        if (song == null)
+                            continue;
+
+                        cmd.Parameters.Clear();
+                        cmd.Parameters.Add(new OleDbParameter("@lastPlayed", song.PlayTime) { OleDbType = OleDbType.Date });
+                        cmd.Parameters.Add(new OleDbParameter("@songID", song.Id) { DbType = DbType.Int64 });
+                        cmd.ExecuteNonQuery();
+                    }
+                }
             }
         }
 
@@ -449,6 +487,19 @@ namespace PlayLogger
             }
         }
 
+        public bool ShowLast24Hours
+        {
+            get => Settings.ShowLast24Hours;
+            set
+            {
+                if (Settings.ShowLast24Hours != value)
+                {
+                    Settings.ShowLast24Hours = value;
+                    Update();
+                }
+            }
+        }
+
         private void reloadColInfo()
         {
             if (m_ColInfo != null)
@@ -474,7 +525,5 @@ namespace PlayLogger
                 m_FilterInfo = Filter;
             }
         }
-
-
     }
 }

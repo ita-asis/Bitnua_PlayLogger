@@ -142,8 +142,7 @@ namespace ExtendedGrid.Styles
                     listbox.ItemsSource = distict;
                     if (clearButton != null && mainGrid.AutoFilterHelper.CurrentDistictValues != null)
                     {
-                        clearButton.IsEnabled = mainGrid.AutoFilterHelper.CurrentDistictValues.Count(c => c.IsChecked) > 0;
-
+                        clearButton.IsEnabled = mainGrid.AutoFilterHelper.CurrentDistictValues.FirstOrDefault(c => c.IsChecked) != null;
                         clearButton.UpdateLayout();
                     }
                 }
@@ -416,31 +415,24 @@ namespace ExtendedGrid.Styles
                             distictValues = grid.AutoFilterHelper.CurrentListBox.ItemsSource as ObservableCollection<CheckedListItem>;
                             if (distictValues != null)
                             {
+                                bool isEnabled = false;
                                 var checkCount = distictValues.Count(c => c.IsChecked && Convert.ToString(c.Name) != "(Select All)" && c.IsSelectAll != "(Select All)");
                                 if (checkCount == 0)
                                 {
                                     grid.AutoFilterHelper.RemoveAllFilter(CurrentGrid, CurrentColumn);
                                     grid.AutoFilterHelper.CurrentListBox.Items.Refresh();
-                                    popup.Tag = countOfFiltersSelected == 0 ? "False" : "True";
+                                    popup.Tag = (isEnabled = countOfFiltersSelected > 0) ? "True" : "False";
                                 }
                                 else
                                 {
                                     grid.AutoFilterHelper.RemoveFilters(CurrentGrid, CurrentColumn, value);
                                     var distictictValues = grid.AutoFilterHelper.CurrentDistictValues;
-                                    popup.Tag = distictictValues.Count(c => c.IsChecked) == 0 ? "False" : "True";
+                                    popup.Tag = (isEnabled = distictictValues.Count(c => c.IsChecked) > 0) ? "True" : "False";
                                 }
-                            }
-                            var sp1 = FindControls.FindParent<StackPanel>(grid.AutoFilterHelper.CurrentListBox);
-                            var popup1 = sp1.Parent as Popup;
-                            if (popup1 != null)
-                            {
-                                var clearButton = FindControls.FindChild<Button>(popup1.Child, "btnClear");
+
+                                var clearButton = FindControls.FindChild<Button>(popup.Child, "btnClear");
                                 if (clearButton != null)
-                                {
-                                    clearButton.IsEnabled = false;
-
-                                }
-
+                                    clearButton.IsEnabled = isEnabled;
                             }
                         }
                     }
