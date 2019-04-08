@@ -198,8 +198,10 @@ namespace PlayLogger
             }
             OnPropertyChanged(() => Songs);
             OnPropertyChanged(() => ColumnInfo);
+            OnPropertyChanged(() => TotalCountLbl);
         }
 
+        public string TotalCountLbl => $"סה\"כ: {(m_Songs != null ? m_Songs.Count() : 0)}";
 
         private bool m_IsDbConnectionOn;
         public bool IsDbConnectionOn
