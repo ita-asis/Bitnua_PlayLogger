@@ -14,18 +14,26 @@ namespace PlayLogger
     public static class DbHandler
     {
         private static HashSet<string> s_fields;
-        public static HashSet<String> SongFields
+        public static HashSet<string> SongFields
         {
             get
             {
                 if (s_fields == null)
                 {
-                    string csvFields = Config.Instance.Get("SongFieldsToSave");
+                    var userSettings = Convert.ToString(UserSettings.Get("SongFieldsToSave"));
+                    var config = Config.Instance.Get("SongFieldsToSave");
+                    string csvFields = string.IsNullOrWhiteSpace(userSettings) ? config : userSettings;
+                    UserSettings.Set("SongFieldsToSave", csvFields);
                     s_fields = new HashSet<string>(csvFields.Split(','));
                 }
 
                 return s_fields;
             }
+        }
+
+        public static void ResetSongFields()
+        {
+            s_fields = null;
         }
 
         private static string extraFiledsCSV()

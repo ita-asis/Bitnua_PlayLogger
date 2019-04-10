@@ -41,14 +41,20 @@
                 <TextBox Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=LostFocus,Mode=TwoWay}"
                          Width="120"
                          Padding="3" />
-
-
             </StackPanel>
             <CheckBox Content="אפשר מחיקה"
                       VerticalContentAlignment="Center"
                       Margin="2"
                       Padding="3"
                       IsChecked="{Binding Settings.CanDeleteSongs,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" />
+            <StackPanel Orientation="Horizontal" Margin="2">
+                <TextBlock Text="שדות להצגה"
+                           HorizontalAlignment="Center"
+                           Padding="3" />
+                <TextBox Text="{Binding Settings.SongFieldsToSave,UpdateSourceTrigger=LostFocus,Mode=TwoWay}"
+                         Width="120"
+                         Padding="3" />
+            </StackPanel>
         </StackPanel>
 
     </Grid>

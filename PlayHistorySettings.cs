@@ -32,6 +32,18 @@ namespace PlayLogger
             }
         }
 
+        public string SongFieldsToSave
+        {
+            get { return Convert.ToString(UserSettings.Get("SongFieldsToSave")); }
+            set
+            {
+                UserSettings.Set("SongFieldsToSave", value);
+                DbHandler.ResetSongFields();
+                OnPropertyChanged(nameof(SongFieldsToSave));
+            }
+        }
+
+
         public bool IsSettingEditable
         {
             get

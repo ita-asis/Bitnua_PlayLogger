@@ -168,13 +168,10 @@ namespace PlayLogger
             }
         }
 
-        private void UpdateButton_Click(object sender, RoutedEventArgs e)
+        private async void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainViewModel)this.DataContext).Update();
+            await ((MainViewModel)this.DataContext).Update();
         }
-
-
-
 
         private static IEnumerable<Type> GetMatchingTypes(string opcode)
         {
@@ -215,7 +212,7 @@ namespace PlayLogger
             }
         }
 
-        private void showSettingsPage_Click(object sender, RoutedEventArgs e)
+        private async void showSettingsPage_Click(object sender, RoutedEventArgs e)
         {
             var settingsPage = new SettingsPopup();
             settingsPage.DataContext = this.DataContext;
@@ -233,6 +230,7 @@ namespace PlayLogger
                 Title = "הגדרות"
             };
             window.ShowDialog();
+            await ((MainViewModel)this.DataContext).Update();
         }
 
         private async void updateLastPlayedBtn_Click(object sender, RoutedEventArgs e)

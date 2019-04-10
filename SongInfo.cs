@@ -59,7 +59,7 @@ namespace PlayLogger
                 songInfo.PlayTime = System.IO.File.GetLastWriteTime(path);
                 songInfo.Title = xSong.Elements("Title").First().Value;
 
-                var enabledFields = DbHandler.SongFields;
+                var enabledFields = new HashSet<string>(DbHandler.SongFields);
                 enabledFields.Add("ID");
 
 

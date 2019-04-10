@@ -50,7 +50,9 @@ namespace PlayLogger
                     {
                         if (e.Result != null)
                         {
+#if !DEBUG
                             UpdateManager.RestartApp();
+#endif
                         }
                     });
                     await updateTask;

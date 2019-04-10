@@ -33,8 +33,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!--Header--> 
         <Grid Margin="4,4,4,10"
-              MaxHeight="115">
+              MaxHeight="130">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="1*" />
@@ -45,8 +46,10 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal"
-                        Grid.Column="0">
+            <StackPanel
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        >
                 <Button Padding="5"
                         Margin="4"
                         VerticalAlignment="Bottom"
@@ -94,27 +97,28 @@
                             SmallChange="0.1"
                             Width="100" />
                 </StackPanel>
-                <CheckBox Margin="4" IsChecked="{Binding ShowLast24Hours}" Content="הצג 24 שעות אחרונות"
-                          VerticalAlignment="Center"/>
-
-                <Button Click="updateLastPlayedBtn_Click" Content="עדכון נוגן לאחרונה" Margin="4"/>
-
             </StackPanel>
 
             <StackPanel Grid.Row="1"
-                        Orientation="Horizontal"
+                        Grid.Column="1"
+                        Orientation="Vertical"
                         Margin="2">
-
-                <TextBlock Text="רחבת הרקדה"
-                           HorizontalAlignment="Center"
-                           Padding="3" />
-                <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
-                           Width="120"
-                           Padding="3" />
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Margin="4" IsChecked="{Binding ShowLast24Hours}" Content="הצג 24 שעות אחרונות" VerticalAlignment="Center"/>
+                    <Button Click="updateLastPlayedBtn_Click" Content="עדכון נוגן לאחרונה" Margin="4"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="רחבת הרקדה"
+                               HorizontalAlignment="Center"
+                               Padding="3" />
+                    <TextBlock Text="{Binding Settings.PlayLocation,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                               Width="120"
+                               Padding="3" />
+                </StackPanel>
             </StackPanel>
-
             <Image Grid.RowSpan="2"
-                   Grid.Column="1"
+                   Grid.Column="0"
                    Margin="0,0,0,5"
                    MaxHeight="80"
                    Stretch="Uniform"
@@ -123,8 +127,8 @@
                    Source="{Binding Settings.LogoImgUrl}" />
 
             <Grid Grid.Row="2"
+                  Grid.Column="0"
                   Grid.ColumnSpan="2">
-
                 <TextBlock Text="ריקודים שרקדו ברחבות"
                            FontSize="18"
                            TextAlignment="Center"
@@ -140,6 +144,7 @@
             </Grid>
         </Grid>
 
+        <!--DataGrid-->
         <Rectangle Name="sizingElement"
                    Grid.Row="1"
                    Fill="Transparent"
