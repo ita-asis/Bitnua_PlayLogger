@@ -35,5 +35,18 @@ namespace PlayLogger
                 }
             }
         }
+
+        private void logoBrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dir = System.IO.Path.GetDirectoryName(logoTB.Text);
+            using (var dialog = new OpenFileDialog() { InitialDirectory = dir })
+            {
+                DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    logoTB.Text = dialog.FileName;
+                }
+            }
+        }
     }
 }

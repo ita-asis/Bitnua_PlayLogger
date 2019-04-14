@@ -52,9 +52,26 @@
                            HorizontalAlignment="Center"
                            Padding="3" />
                 <TextBox Text="{Binding Settings.SongFieldsToSave,UpdateSourceTrigger=LostFocus,Mode=TwoWay}"
-                         Width="120"
+                         Width="320"
                          Padding="3" />
             </StackPanel>
+            <Grid Margin="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="לוגו"
+                           Padding="3" />
+                <TextBox Text="{Binding Settings.LogoImgUrl,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                         x:Name="logoTB"
+                         Grid.Column="1"
+                         Padding="3" />
+                <Button Content="..."
+                            Padding="5"
+                        Grid.Column="2"
+                            Click="logoBrowseButton_Click" />
+            </Grid>
         </StackPanel>
 
     </Grid>
