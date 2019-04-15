@@ -38,7 +38,7 @@ namespace PlayLogger
 
         private void logoBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var dir = System.IO.Path.GetDirectoryName(logoTB.Text);
+            var dir = !string.IsNullOrWhiteSpace(logoTB.Text) ? System.IO.Path.GetDirectoryName(logoTB.Text) : null;
             using (var dialog = new OpenFileDialog() { InitialDirectory = dir })
             {
                 DialogResult result = dialog.ShowDialog();
